@@ -1,28 +1,38 @@
+extern crate actix;
+extern crate futures;
 extern crate actix_web;
+extern crate clap; 
 
-use actix_web::{http, server, App, HttpRequest};
-use std::cell::Cell;
-
-// This struct represents state
-struct AppState {
-    counter: Cell<usize>,
-}
-
-fn index(req: &HttpRequest<AppState>) -> String {
-    let count = req.state().counter.get() + 1; // <- get count
-    req.state().counter.set(count); // <- store new count in state
-
-    format!("Request number: {}", count) // <- response with count
-}
+use actix_web::{client};
+use futures::future::Future;
+use clap::{App, Arg};
 
 fn main() {
-    server::new(|| {
-        App::with_state(AppState {
-                counter: Cell::new(0)
-            })
-            .resource("/", |r| r.method(http::Method::GET).f(index))
-    })
-    .bind("127.0.0.1:8088")
-    .unwrap()
-    .run();
+    let matches = App::new("hy")
+        .version("0.1.0")
+        .about("command line translation tool implemented in Rust")
+        .arg(Arg::with_name("WORD")
+            .help("set the word to translate")
+            .required(true)
+            .min_values(1))
+       .get_matches(); 
+
+    println!("matches: {:?}", matches);
+
+    if 2 > 1 {
+        return
+    }
+
+    actix::run(
+        || client::ClientRequest::get("http://www.rust-lang.org") // <- Create request builder
+            .header("User-Agent", "Actix-web")
+            .finish().unwrap()
+            .send()                                    // <- Send http request
+            .map_err(|_| ())
+            .and_then(|response| {                     // <- server http response
+                println!("Response: {:?}", response);
+                actix::System::current().stop();
+                Ok(())
+            }),
+    );
 }

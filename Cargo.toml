@@ -4,4 +4,8 @@ version = "0.1.0"
 authors = ["shohi <oshohi@gmail.com>"]
 
 [dependencies]
+actix = "^0.7"
 actix-web = "^0.7"
+
+futures = "0.1"
+clap = "2.32.0"
