@@ -18,6 +18,7 @@ fn main() {
        .get_matches(); 
 
     println!("matches: {:?}", matches);
+    println!("Hello world");
 
     if 2 > 1 {
         return
