@@ -1,0 +1,4 @@
+# add alias
+[alias]
+# space_example = ["run", "--release", "--", "\"command list\""]
+tt = "test -- --nocapture"

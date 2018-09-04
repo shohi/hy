@@ -17,4 +17,4 @@ $> hy [WORD]
 
 ## Thanks
 
-1. fanyi, https://github.com/afc163/fanyi
+1. fanyi, <https://github.com/afc163/fanyi>
