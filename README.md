@@ -1,5 +1,5 @@
 # hy
-command line translation tool implemented in Rust
+command line translation tool implemented in Rust (WIP)
 
 
 ## Usage
@@ -8,9 +8,9 @@ command line translation tool implemented in Rust
 # install `hy`
 $> git clone git@github.com:shohi/hy.git
 $> cd hy
-$> cargo install 
+$> cargo install
 
-# use 
+# play
 $> hy [WORD]
 
 ```
