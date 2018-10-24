@@ -1,12 +1,17 @@
 extern crate reqwest;
 
-use super::{Item, ItemError};
+use super::{Item, ItemError, Query};
 
-pub fn get_data(url: &str) -> Result<Item, ItemError> {
-    let body = reqwest::get(url).unwrap().text().unwrap();
+struct Proxy();
 
-    println!("body = {:?}", body);
-    Ok(Item::new())
+impl Query for Proxy {
+    fn query(&self, keyword: &str) -> Result<Item, ItemError> {
+        let url = format!("http://www.dictionaryapi.com/api/v1/references/collegiate/xml/{}?key=82c5d495-ccf0-4e72-9051-5089e85c2975", keyword);
+        let body = reqwest::get(&url).unwrap().text().unwrap();
+        println!("body = {:?}", body);
+
+        return Ok(Item::new());
+    }
 }
 
 #[cfg(test)]

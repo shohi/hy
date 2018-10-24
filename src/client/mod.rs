@@ -5,7 +5,7 @@ mod iciba;
 mod youdao;
 
 pub trait Query {
-    fn query(&self, key: &str) -> Result<Item, ItemError>;
+    fn query(&self, keyword: &str) -> Result<Item, ItemError>;
 }
 
 pub struct Item {
