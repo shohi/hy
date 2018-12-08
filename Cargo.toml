@@ -2,6 +2,7 @@
 name = "hy"
 version = "0.1.0"
 authors = ["shohi <oshohi@gmail.com>"]
+edition = "2018"
 
 [dependencies]
 actix = "^0.7"
