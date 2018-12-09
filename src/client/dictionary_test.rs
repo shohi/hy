@@ -2,9 +2,9 @@ mod tests {
     use super::super::*;
 
     #[test]
-    fn test_get_data() {
+    fn test_query() {
         let keyword = "hello";
-        let p = Proxy();
+        let p = Dictionary::new();
         p.query(keyword);
     }
 }

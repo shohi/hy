@@ -2,11 +2,23 @@ use reqwest;
 
 use super::{Item, ItemError, Query};
 
-struct Proxy();
+struct Dictionary {
+    base_url: &'static str,
+    key: &'static str,
+}
 
-impl Query for Proxy {
+impl Dictionary {
+    pub fn new() -> Dictionary {
+        Dictionary {
+            base_url: "http://www.dictionaryapi.com/api/v1/references/collegiate/xml",
+            key: "82c5d495-ccf0-4e72-9051-5089e85c2975",
+        }
+    }
+}
+
+impl Query for Dictionary {
     fn query(&self, keyword: &str) -> Result<Item, ItemError> {
-        let url = format!("http://www.dictionaryapi.com/api/v1/references/collegiate/xml/{}?key=82c5d495-ccf0-4e72-9051-5089e85c2975", keyword);
+        let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
         let body = reqwest::get(&url).unwrap().text().unwrap();
         println!("body = {:?}", body);
 
