@@ -1,7 +1,7 @@
-extern crate reqwest;
-extern crate serde_xml_rs;
-
 use super::{Item, ItemError};
+
+use serde;
+use serde_derive::{Deserialize, Serialize};
 use serde_xml_rs::deserialize;
 
 // TODO: implement deserialize

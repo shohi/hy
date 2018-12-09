@@ -1,6 +1,6 @@
 // experiments
-extern crate serde_xml_rs;
 
+use serde_derive::{Deserialize, Serialize};
 use serde_xml_rs::{deserialize, serialize};
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]

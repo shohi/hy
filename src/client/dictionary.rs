@@ -1,4 +1,4 @@
-extern crate reqwest;
+use reqwest;
 
 use super::{Item, ItemError, Query};
 

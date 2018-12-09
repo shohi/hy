@@ -1,7 +1,4 @@
-extern crate actix;
-extern crate actix_web;
-extern crate clap;
-extern crate futures;
+use actix;
 
 use actix::prelude::*;
 use actix_web::client;

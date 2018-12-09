@@ -1,5 +1,3 @@
-extern crate actix_web;
-
 use actix_web::{http, server, App, HttpRequest};
 use std::cell::Cell;
 
@@ -19,8 +17,10 @@ fn new_server() {
     server::new(|| {
         App::with_state(AppState {
             counter: Cell::new(0),
-        }).resource("/", |r| r.method(http::Method::GET).f(index))
-    }).bind("127.0.0.1:8088")
+        })
+        .resource("/", |r| r.method(http::Method::GET).f(index))
+    })
+    .bind("127.0.0.1:8088")
     .unwrap()
     .run();
 }

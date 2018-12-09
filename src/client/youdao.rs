@@ -1,15 +1,15 @@
-extern crate reqwest;
-
 use super::{Item, ItemError, Query};
 
+use serde_derive::{Deserialize, Serialize};
+
 struct YouDao {
-    baseURL: String,
+    base_url: String,
 }
 
 impl YouDao {
     pub fn new() -> YouDao {
         YouDao {
-            baseURL: String::from("http://fanyi.youdao.com/openapi.do?keyfrom=node-fanyi&key=110811608&type=data&doctype=json&version=1.1&q=%s"),
+            base_url: String::from("http://fanyi.youdao.com/openapi.do?keyfrom=node-fanyi&key=110811608&type=data&doctype=json&version=1.1&q=%s"),
         }
     }
 }

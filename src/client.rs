@@ -1,6 +1,5 @@
-mod exp;
-
 mod dictionary;
+mod exp;
 mod iciba;
 mod youdao;
 
