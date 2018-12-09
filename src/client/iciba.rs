@@ -36,33 +36,40 @@ impl Query for Iciba {
 }
 
 // TODO: implement deserialize
-#[derive(Deserialize, Debug)]
+#[derive(Debug)]
 struct Dict {
     key: String,
-
-    #[serde(flatten)]
     prons: Vec<Pronounciation>,
-
-    #[serde(flatten)]
     accepts: Vec<Acceptation>,
-
-    #[serde(flatten)]
     sents: Vec<Sentence>,
 }
 
-#[derive(Deserialize, Debug)]
+impl Dict {
+    fn new() -> Dict {
+        Dict {
+            key: String::new(),
+            prons: Vec::<Pronounciation>::new(),
+            accepts: Vec::<Acceptation>::new(),
+            sents: Vec::<Sentence>::new(),
+        }
+    }
+}
+
+// TODO: implemnt deserialize
+#[derive(Debug)]
 struct Pronounciation {
     ps: String,
     pron: String,
 }
 
-#[derive(Deserialize, Debug)]
+// TODO: implemnt deserialize
+#[derive(Debug)]
 struct Acceptation {
     pos: String,
     acceptation: String,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Serialize, Debug)]
 #[serde(rename = "sent")]
 struct Sentence {
     orig: String,

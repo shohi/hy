@@ -3,31 +3,27 @@
 use serde_derive::{Deserialize, Serialize};
 use serde_xml_rs::{deserialize, serialize};
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Item {
     name: String,
     source: String,
 }
 
-fn marshall() {
-    let src = r#"<Item><name>Banana</name><source>Store</source></Item>"#;
-    let should_be = Item {
-        name: "Banana".to_string(),
-        source: "Store".to_string(),
-    };
+#[derive(Debug, Serialize, Deserialize)]
+struct Value {
+    name: String,
+    source: String,
+}
 
-    // deserialize
-    let item: Item = deserialize(src.as_bytes()).unwrap();
+#[derive(Debug, Deserialize)]
+struct Project {
+    pub name: String,
 
-    println!("origin: {:?}", should_be);
-    println!("data: {:?}", item);
+    #[serde(rename = "Item", default)]
+    pub items: Vec<Item>,
 
-    // serialize
-    let mut buffer = Vec::new();
-    serialize(&item, &mut buffer).unwrap();
-
-    let ser_str = String::from_utf8(buffer).unwrap();
-    println!("serialize: {:?}", ser_str);
+    #[serde(rename = "Value", default)]
+    pub values: Vec<Value>,
 }
 
 #[cfg(test)]
