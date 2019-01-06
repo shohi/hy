@@ -15,7 +15,7 @@ struct Value {
     source: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 struct Project {
     pub name: String,
 

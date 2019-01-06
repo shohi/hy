@@ -5,8 +5,8 @@ authors = ["shohi <oshohi@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-actix = "0.7.8"
-actix-web = "0.7.15"
+actix = "0.7.9"
+actix-web = "0.7.17"
 
 futures = "0.1"
 clap = "2.32.0"
@@ -15,6 +15,6 @@ reqwest = "0.9.5"
 xml-rs = "0.8"
 quick-xml = "0.13.1"
 
-serde = "1.0.81"
-serde_derive = "1.0.81"
+serde = "1.0.84"
+serde_derive = "1.0.84"
 serde-xml-rs = "0.2.1"

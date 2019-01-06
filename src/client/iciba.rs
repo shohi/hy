@@ -36,7 +36,7 @@ impl Query for Iciba {
 }
 
 // TODO: implement deserialize
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct Dict {
     key: String,
     prons: Vec<Pronounciation>,
@@ -56,14 +56,14 @@ impl Dict {
 }
 
 // TODO: implemnt deserialize
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct Pronounciation {
     ps: String,
     pron: String,
 }
 
 // TODO: implemnt deserialize
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct Acceptation {
     pos: String,
     acceptation: String,
