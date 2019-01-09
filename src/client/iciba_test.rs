@@ -1,6 +1,5 @@
 mod tests {
     use super::super::*;
-    use serde_xml_rs::serialize;
 
     #[test]
     fn test_query() {
@@ -21,11 +20,8 @@ mod tests {
         });
 
         // serialize
-        let mut buffer = Vec::new();
-        serialize(&dt, &mut buffer).unwrap();
-
-        let ser_str = String::from_utf8(buffer).unwrap();
-        println!("serialize: {:?}", ser_str);
+        let serialized = sd_xml::to_string(&dt).unwrap();
+        println!("serialize: {:?}", serialized);
     }
 
     // FIXME

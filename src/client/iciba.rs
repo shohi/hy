@@ -2,7 +2,7 @@ use super::{Item, ItemError, Query};
 
 use serde;
 use serde_derive::{Deserialize, Serialize};
-use serde_xml_rs::deserialize;
+use serde_xml_rs as sd_xml;
 
 struct Iciba {
     base_url: &'static str,
@@ -20,7 +20,7 @@ impl Iciba {
     fn get_data(&self, url: &str) -> Result<Item, ItemError> {
         let body = reqwest::get(url).unwrap().text().unwrap();
         println!("body = {:?}", body);
-        let dict: Dict = deserialize(body.as_bytes()).unwrap();
+        let dict: Dict = sd_xml::from_str(body.as_str()).unwrap();
         println!("dict = {:?}", dict);
         Ok(Item::new())
     }

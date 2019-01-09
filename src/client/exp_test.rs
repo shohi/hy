@@ -10,17 +10,14 @@ mod tests {
         };
 
         // deserialize
-        let item: Item = deserialize(src.as_bytes()).unwrap();
+        let item: Item = sd_xml::from_str(src).unwrap();
 
         println!("origin: {:?}", should_be);
         println!("data: {:?}", item);
 
         // serialize
-        let mut buffer = Vec::new();
-        serialize(&item, &mut buffer).unwrap();
-
-        let ser_str = String::from_utf8(buffer).unwrap();
-        println!("serialize: {:?}", ser_str);
+        let serialized = sd_xml::to_string(&item).unwrap();
+        println!("serialize: {:?}", serialized);
     }
 
     #[test]
@@ -33,15 +30,12 @@ mod tests {
         </Project>
         "##;
 
-        let project: Project = deserialize(s.as_bytes()).unwrap();
+        let project: Project = sd_xml::from_str(s).unwrap();
         println!("{:#?}", project);
 
         // serialize
-        let mut buffer = Vec::new();
-        serialize(&project, &mut buffer).unwrap();
-
-        let ser_str = String::from_utf8(buffer).unwrap();
-        println!("serialize: {:?}", ser_str);
+        let serialized = sd_xml::to_string(&project).unwrap();
+        println!("serialize: {:?}", serialized);
     }
 
 }

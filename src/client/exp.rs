@@ -1,7 +1,7 @@
 // experiments
 
 use serde_derive::{Deserialize, Serialize};
-use serde_xml_rs::{deserialize, serialize};
+use serde_xml_rs as sd_xml;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct Item {
