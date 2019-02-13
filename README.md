@@ -15,6 +15,10 @@ $> hy [WORD]
 
 ```
 
+## TODO
+- [ ] add log
+
+
 ## Thanks
 
 1. fanyi, <https://github.com/afc163/fanyi>

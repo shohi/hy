@@ -6,16 +6,18 @@ edition = "2018"
 
 [dependencies]
 actix = "0.7.9"
-actix-web = "0.7.17"
+actix-web = "0.7.18"
 
 futures = "0.1.25"
 clap = "2.32.0"
 
-reqwest = "0.9.6"
+reqwest = "0.9.9"
 xml-rs = "0.8.0"
-quick-xml = "0.13.1"
+quick-xml = "0.13.2"
 
-serde = "1.0.84"
-serde_derive = "1.0.84"
+serde = "1.0.87"
+serde_derive = "1.0.87"
+
+wait-timeout = "0.2.0"
 
 serde-xml-rs = { git = 'https://github.com/shohi/serde-xml-rs' }
