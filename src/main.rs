@@ -5,7 +5,29 @@ use actix_web::client;
 use clap::{App, Arg};
 use futures::future::Future;
 
+use chrono::Local;
+use env_logger::Builder;
+use log::LevelFilter;
+use std::io::Write;
+
+fn setup_logger() {
+    Builder::new()
+        .format(|buf, record| {
+            writeln!(
+                buf,
+                "{} [{}] - {}",
+                Local::now().format("%Y-%m-%dT%H:%M:%S"),
+                record.level(),
+                record.args()
+            )
+        })
+        .filter(None, LevelFilter::Info)
+        .init();
+}
+
 fn main() {
+    setup_logger();
+
     /*
     let matches = App::new("hy")
         .version("0.1.0")

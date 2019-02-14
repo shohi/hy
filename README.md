@@ -15,10 +15,12 @@ $> hy [WORD]
 
 ```
 
-## TODO
-- [ ] add log
-
-
 ## Thanks
 
 1. fanyi, <https://github.com/afc163/fanyi>
+
+
+## References
+
+1. <https://www.dictionaryapi.com/products/api-collegiate-dictionary>
+2. 

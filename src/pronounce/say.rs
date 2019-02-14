@@ -1,10 +1,11 @@
+use log::{error, info};
 use std::process::Command;
 use std::time::Duration;
 use wait_timeout::ChildExt;
 
 #[cfg(not(target_os = "macos"))]
 pub fn say(_: &str) {
-    // TODO: add log - unimplemented!
+    error!("say command is unimplemented on non-macOS");
 }
 
 #[cfg(target_os = "macos")]
@@ -24,16 +25,30 @@ pub fn say(word: &str) {
         }
     };
 
-    // TODO: use log instead
-    println!("status code: {:?}", status_code);
+    info!(
+        "status code of say command for word [{}]: {:?}",
+        word, status_code
+    );
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use env_logger::Builder;
+    use log::LevelFilter;
+    use std::sync::{Once, ONCE_INIT};
+
+    static INIT: Once = ONCE_INIT;
+
+    fn setup() {
+        INIT.call_once(|| {
+            Builder::new().filter(None, LevelFilter::Debug).init();
+        });
+    }
 
     #[test]
     fn test_say() {
+        setup();
         say("hello");
     }
 }

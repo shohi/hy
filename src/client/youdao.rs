@@ -24,6 +24,7 @@ impl Query for YouDao {
             "{}?keyfrom={}&key={}&type=data&doctype=json&version=1.1&q={}",
             self.base_url, self.key_from, self.key, keyword
         );
+        println!("url: {}", url);
         let body = reqwest::get(&url).unwrap().text().unwrap();
         println!("body = {:?}", body);
         Ok(Item::new())
