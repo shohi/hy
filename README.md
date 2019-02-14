@@ -23,4 +23,4 @@ $> hy [WORD]
 ## References
 
 1. <https://www.dictionaryapi.com/products/api-collegiate-dictionary>
-2. 
+2. <https://github.com/jokermonn/-Api>
