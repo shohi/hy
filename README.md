@@ -15,6 +15,9 @@ $> hy [WORD]
 
 ```
 
+## TODO
+- [ ] support search history and do some stats based on it
+
 ## Thanks
 
 1. fanyi, <https://github.com/afc163/fanyi>
