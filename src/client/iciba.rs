@@ -2,7 +2,6 @@ use super::{Item, ItemError, Query};
 
 use serde;
 use serde_derive::{Deserialize, Serialize};
-use serde_xml_rs as sd_xml;
 
 struct Iciba {
     base_url: &'static str,
