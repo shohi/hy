@@ -1,6 +1,6 @@
 use super::{Item, ItemError, Query};
 
-use serde;
+
 use serde_derive::{Deserialize, Serialize};
 
 struct Iciba {
@@ -17,7 +17,7 @@ impl Iciba {
         }
     }
 
-    fn get_data(&self, url: &str) -> Result<Item, ItemError> {
+    fn get_data(&self, _url: &str) -> Result<Item, ItemError> {
         Ok(Item::new())
     }
 }

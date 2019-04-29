@@ -1,6 +1,6 @@
 use super::{Item, ItemError, Query};
 
-use serde_derive::{Deserialize, Serialize};
+
 
 struct YouDao {
     base_url: &'static str,
