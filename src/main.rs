@@ -6,8 +6,8 @@ use log::LevelFilter;
 use std::io::Write;
 
 mod client;
-mod pronounce;
 mod render;
+mod say;
 mod service;
 
 fn setup_logger() {
@@ -31,15 +31,15 @@ fn main() {
     let matches = App::new("hy")
         .version("0.1.0")
         .about("command line translation tool implemented in Rust")
-        .arg(Arg::with_name("WORD")
+        .arg(
+            Arg::with_name("WORD")
                 .help("set the word to translate")
                 .takes_value(true)
                 .required(true)
-                .index(1))
+                .index(1),
+        )
         .get_matches();
 
     let word = matches.value_of("WORD").unwrap();
-    println!("matches: {:?}", word);
-
-    service::translate()
+    service::translate(word);
 }

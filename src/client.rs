@@ -22,9 +22,35 @@ impl Item {
             sentences: Vec::new(),
         }
     }
+
+    pub fn dump(&self) {
+        // TODO
+        let joined = self.acceptations.join("\n");
+        println!("{}", joined);
+    }
 }
 
 #[derive(Debug, Clone)]
 pub struct ItemError {
     pub message: String,
+}
+
+pub fn QueryAll(word: &str) -> Vec<Item> {
+    // TODO
+    let vec = Vec::new();
+    vec
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_string_join() {
+        let mut vec = Vec::new();
+        vec.push("hello");
+        vec.push("world");
+
+        println!("{}", vec.join("-"));
+    }
 }
