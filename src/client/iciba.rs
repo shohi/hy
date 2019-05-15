@@ -1,6 +1,5 @@
 use super::{Item, ItemError, Query};
 
-
 use serde_derive::{Deserialize, Serialize};
 
 struct Iciba {
@@ -16,10 +15,6 @@ impl Iciba {
             base_url: "http://www.iciba.com/index.php?a=getWordMean&c=search&list=1,8&word=",
         }
     }
-
-    fn get_data(&self, _url: &str) -> Result<Item, ItemError> {
-        Ok(Item::new())
-    }
 }
 
 impl Query for Iciba {
@@ -29,7 +24,10 @@ impl Query for Iciba {
 
         let body = reqwest::get(&url).unwrap().text().unwrap();
         println!("body = {:?}", body);
-        Ok(Item::new())
+        let mut item = Item::new();
+        item.query = keyword.into();
+
+        Ok(item)
     }
 }
 
@@ -75,5 +73,12 @@ struct Sentence {
 }
 
 #[cfg(test)]
-#[path = "./iciba_test.rs"]
-mod iciba_test;
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_query() {
+        let cb = Iciba::new();
+        cb.query("hello");
+    }
+}
