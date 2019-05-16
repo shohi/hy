@@ -1,6 +1,8 @@
 use reqwest;
 
 use super::{Item, ItemError, Query};
+use serde_json::{Result, Value};
+use std::str::FromStr;
 
 struct Dictionary {
     base_url: &'static str,
@@ -22,12 +24,26 @@ impl Query for Dictionary {
         let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
         println!("url: {}", url);
         let body = reqwest::get(&url).unwrap().text().unwrap();
+
+        serde_json::from_slice(body);
+
         println!("body = {:?}", body);
 
-        return Ok(Item::new());
+        let mut item = Item::new();
+        item.query = keyword.to_string();
+
+        return Ok(item);
     }
 }
 
 #[cfg(test)]
-#[path = "./dictionary_test.rs"]
-mod dictionary_test;
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_query() {
+        let keyword = "hello";
+        let p = Dictionary::new();
+        p.query(keyword);
+    }
+}
