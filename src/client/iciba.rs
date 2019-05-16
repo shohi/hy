@@ -1,6 +1,6 @@
 use super::{Item, ItemError, Query};
-
 use serde_derive::{Deserialize, Serialize};
+use serde_json::Value;
 
 struct Iciba {
     base_url: &'static str,
@@ -22,8 +22,11 @@ impl Query for Iciba {
         let url = format!("{}{}", self.base_url, keyword);
         println!("url: {}", url);
 
-        let body = reqwest::get(&url).unwrap().text().unwrap();
-        println!("body = {:?}", body);
+        let mut resp = reqwest::get(&url)?;
+        let body = resp.text()?;
+        let val: Dict = serde_json::from_str(&body)?;
+
+        println!("hello, {:#?}", &val);
         let mut item = Item::new();
         item.query = keyword.into();
 
@@ -31,45 +34,57 @@ impl Query for Iciba {
     }
 }
 
-// TODO: implement deserialize
 #[derive(Debug, Deserialize)]
 struct Dict {
-    key: String,
-    prons: Vec<Pronounciation>,
-    accepts: Vec<Acceptation>,
-    sents: Vec<Sentence>,
+    // NOTE: typo in its API
+    #[serde(rename = "baesInfo")]
+    base: BaseInfo,
+
+    #[serde(rename = "trade_means")]
+    trades: Vec<TradeMean>,
+
+    #[serde(rename = "sentence")]
+    sentences: Vec<Sentence>,
 }
 
-impl Dict {
-    fn new() -> Dict {
-        Dict {
-            key: String::new(),
-            prons: Vec::<Pronounciation>::new(),
-            accepts: Vec::<Acceptation>::new(),
-            sents: Vec::<Sentence>::new(),
-        }
-    }
-}
-
-// TODO: implemnt deserialize
 #[derive(Debug, Deserialize)]
-struct Pronounciation {
-    ps: String,
-    pron: String,
+struct BaseInfo {
+    symbols: Vec<Symbol>,
 }
 
-// TODO: implemnt deserialize
 #[derive(Debug, Deserialize)]
-struct Acceptation {
-    pos: String,
-    acceptation: String,
+struct Symbol {
+    #[serde(rename = "ph_en")]
+    phen: String,
+
+    #[serde(rename = "ph_am")]
+    pham: String,
+
+    parts: Vec<Part>,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
-#[serde(rename = "sent")]
+#[derive(Debug, Deserialize)]
+struct Part {
+    part: String,
+    means: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
+struct TradeMean {
+    #[serde(rename = "word_trade")]
+    word: String,
+
+    #[serde(rename = "word_mean")]
+    mean: Vec<String>,
+}
+
+#[derive(Debug, Deserialize)]
 struct Sentence {
-    orig: String,
-    trans: String,
+    #[serde(rename = "Network_en")]
+    en: String,
+
+    #[serde(rename = "Network_cn")]
+    cn: String,
 }
 
 #[cfg(test)]
@@ -77,8 +92,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_query() {
+    fn test_yyy_query() {
         let cb = Iciba::new();
-        cb.query("hello");
+        let val = cb.query("hello");
+        println!("result -> {:#?}", &val);
     }
 }

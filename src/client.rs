@@ -1,3 +1,6 @@
+use reqwest;
+use serde_derive::{Deserialize, Serialize};
+
 mod dictionary;
 mod iciba;
 mod youdao;
@@ -6,6 +9,7 @@ pub trait Query {
     fn query(&self, keyword: &str) -> Result<Item, ItemError>;
 }
 
+#[derive(Debug, Deserialize)]
 pub struct Item {
     pub query: String,
     pub phonetic: Vec<String>,
@@ -33,6 +37,22 @@ impl Item {
 #[derive(Debug, Clone)]
 pub struct ItemError {
     pub message: String,
+}
+
+impl From<reqwest::Error> for ItemError {
+    fn from(err: reqwest::Error) -> ItemError {
+        ItemError {
+            message: format!("{:?}", err),
+        }
+    }
+}
+
+impl From<serde_json::Error> for ItemError {
+    fn from(err: serde_json::Error) -> ItemError {
+        ItemError {
+            message: format!("{:?}", err),
+        }
+    }
 }
 
 pub fn QueryAll(word: &str) -> Vec<Item> {

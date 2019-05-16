@@ -1,7 +1,5 @@
-use reqwest;
-
 use super::{Item, ItemError, Query};
-use serde_json::{Result, Value};
+use serde_json::{Result as JsonResult, Value};
 use std::str::FromStr;
 
 struct Dictionary {
@@ -22,12 +20,11 @@ impl Dictionary {
 impl Query for Dictionary {
     fn query(&self, keyword: &str) -> Result<Item, ItemError> {
         let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
-        println!("url: {}", url);
-        let body = reqwest::get(&url).unwrap().text().unwrap();
+        println!("{}", url);
 
-        serde_json::from_slice(body);
-
-        println!("body = {:?}", body);
+        let mut resp = reqwest::get(&url)?;
+        let body = resp.text()?;
+        let val: Value = serde_json::from_str(&body)?;
 
         let mut item = Item::new();
         item.query = keyword.to_string();
@@ -41,7 +38,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_query() {
+    fn test_xxx_query() {
         let keyword = "hello";
         let p = Dictionary::new();
         p.query(keyword);
