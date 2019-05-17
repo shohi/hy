@@ -9,19 +9,19 @@ pub trait Query {
     fn query(&self, keyword: &str) -> Result<Item, ItemError>;
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Default)]
 pub struct Item {
     pub query: String,
-    pub phonetic: Vec<String>,
+    pub phonetics: Vec<String>,
     pub acceptations: Vec<String>,
-    pub sentences: Vec<String>,
+    pub sentences: Vec<TranslatePair>,
 }
 
 impl Item {
     pub fn new() -> Self {
         Item {
             query: String::new(),
-            phonetic: Vec::new(),
+            phonetics: Vec::new(),
             acceptations: Vec::new(),
             sentences: Vec::new(),
         }
@@ -32,6 +32,12 @@ impl Item {
         let joined = self.acceptations.join("\n");
         println!("{}", joined);
     }
+}
+
+#[derive(Debug, Deserialize, Default)]
+pub struct TranslatePair {
+    pub from: String,
+    pub to: String,
 }
 
 #[derive(Debug, Clone)]

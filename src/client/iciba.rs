@@ -1,4 +1,4 @@
-use super::{Item, ItemError, Query};
+use super::{Item, ItemError, Query, TranslatePair};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -27,10 +27,64 @@ impl Query for Iciba {
         let val: Dict = serde_json::from_str(&body)?;
 
         println!("hello, {:#?}", &val);
-        let mut item = Item::new();
+
+        let mut item = Item::default();
         item.query = keyword.into();
+        item.phonetics = self.phonetic(&val);
+        item.acceptations = self.acceptation(&val);
+        item.sentences = self.sentence(&val);
 
         Ok(item)
+    }
+}
+
+impl Iciba {
+    fn phonetic(&self, dict: &Dict) -> Vec<String> {
+        let symbol = &dict.base.symbols[0];
+
+        vec![
+            format!("英 {}", &symbol.phen),
+            format!("美 {}", &symbol.pham),
+        ]
+    }
+
+    fn acceptation(&self, dict: &Dict) -> Vec<String> {
+        let mut result = Vec::new();
+
+        let parts = &dict.base.symbols[0].parts;
+
+        for p in parts {
+            let means = p
+                .means
+                .iter()
+                .fold("".into(), |acc, x| format!("{}{}{}", acc, x, ";")); // TODO: refactor
+
+            result.push(format!("{} {}", &p.part, means));
+        }
+
+        result
+    }
+
+    fn sentence(&self, dict: &Dict) -> Vec<TranslatePair> {
+        let sents = &dict.sentences;
+
+        /* TODO
+         * Why not work? dict is borrowed?
+        sents
+            .into_iter()
+            .map(|s| TranslatePair {
+                from: s.en,
+                to: s.cn,
+            })
+            .collect()
+         */
+        sents
+            .iter()
+            .map(|s| TranslatePair {
+                from: s.en.clone(),
+                to: s.cn.clone(),
+            })
+            .collect()
     }
 }
 
