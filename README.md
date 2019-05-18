@@ -1,5 +1,5 @@
 # hy
-command line translation tool implemented in Rust (WIP)
+command line translation tool implemented in Rust
 
 
 ## Usage
@@ -16,6 +16,9 @@ $> hy [WORD]
 ```
 
 ## TODO
+
+- [ ] set timeout for http request
+- [ ] improve error handling
 - [ ] support search history and do some stats based on it
 
 ## Thanks
