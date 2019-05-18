@@ -1,5 +1,6 @@
 use reqwest;
 use serde_derive::{Deserialize, Serialize};
+use termion::{color, style};
 
 mod dictionary;
 mod iciba;
@@ -32,7 +33,15 @@ pub struct Phonetic {
 // TODO: refactor
 impl Phonetic {
     pub fn dump(&self) -> String {
-        format!("{}  {}  ~  {}", &self.en, self.us, self.api)
+        format!(
+            "{}{}  {}{}  ~  {}{}",
+            color::Fg(color::Magenta),
+            &self.en,
+            self.us,
+            color::Fg(color::LightBlack),
+            self.api,
+            color::Fg(color::Reset),
+        )
     }
 }
 

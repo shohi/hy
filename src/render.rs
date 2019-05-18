@@ -1,27 +1,60 @@
 use crate::client::{Item, ItemError};
+use regex::{self, Regex, RegexBuilder};
 use termion::{color, style};
 
 // TODO: implement
 pub fn render(items: &[Item]) {
     for m in items.iter() {
         render_item(m);
-        println!("{}\n", "--".repeat(4));
     }
 }
 
 fn render_item(item: &Item) {
-    println!("\n{} {}\n", &item.query, item.phonetic.dump());
+    println!();
+    println!("{} {}", &item.query, item.phonetic.dump(),);
+    println!();
 
     for s in item.acceptations.iter() {
-        println!("- {}", &s);
+        println!(
+            "{}- {}{}",
+            color::Fg(color::LightBlack),
+            color::Fg(color::Green),
+            &s,
+        );
     }
-    println!();
+    println!("{}", color::Fg(color::Reset));
 
     for (i, p) in item.sentences.iter().enumerate() {
         // sequence starts from 1
-        println!("{}. {}\n{}{}", i + 1, &p.from, " ".repeat(3), &p.to);
+        print!("{}{}. ", color::Fg(color::LightBlack), i + 1);
+        highlight(p.from.clone(), item.query.clone());
+        println!("{}{}{}", color::Fg(color::Cyan), " ".repeat(3), &p.to);
     }
-    println!()
+
+    println!("{}\n{}", color::Fg(color::LightBlack), "--".repeat(4));
+    println!("{}", color::Fg(color::Reset))
+}
+
+// TODO: highlight query works in examples
+// and use &str instead
+fn highlight(s: String, key: String) {
+    let exp = format!("(?P<k>{})", key);
+    let re = RegexBuilder::new(exp.as_str())
+        .case_insensitive(true)
+        .build()
+        .expect("invalid regexp");
+
+    let result = re.replace_all(
+        s.as_str(),
+        format!(
+            "{}$k{}",
+            color::Fg(color::Yellow),
+            color::Fg(color::LightBlack)
+        )
+        .as_str(),
+    );
+
+    println!("{}", result);
 }
 
 #[cfg(test)]
@@ -40,5 +73,13 @@ mod tests {
     fn test_render() {
         let vec = Vec::new();
         render(&vec);
+    }
+
+    #[test]
+    fn test_highlight() {
+        let s = "hello world hello".into();
+        let key = "world".into();
+
+        highlight(s, key);
     }
 }
