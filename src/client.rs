@@ -5,28 +5,38 @@ mod dictionary;
 mod iciba;
 mod youdao;
 
-pub trait Query {
+use dictionary::Dictionary;
+use iciba::Iciba;
+use youdao::YouDao;
+
+trait Query {
     fn query(&self, keyword: &str) -> Result<Item, ItemError>;
 }
 
 #[derive(Debug, Deserialize, Default)]
 pub struct Item {
     pub query: String,
-    pub phonetics: Vec<String>,
+    pub phonetic: Phonetic,
     pub acceptations: Vec<String>,
     pub sentences: Vec<TranslatePair>,
 }
 
-impl Item {
-    pub fn new() -> Self {
-        Item {
-            query: String::new(),
-            phonetics: Vec::new(),
-            acceptations: Vec::new(),
-            sentences: Vec::new(),
-        }
-    }
+// TODO: implement format trait
+#[derive(Debug, Deserialize, Default)]
+pub struct Phonetic {
+    api: String,
+    en: String,
+    us: String,
+}
 
+// TODO: refactor
+impl Phonetic {
+    pub fn dump(&self) -> String {
+        format!("{}  {}  ~  {}", &self.en, self.us, self.api)
+    }
+}
+
+impl Item {
     pub fn dump(&self) {
         // TODO
         let joined = self.acceptations.join("\n");
@@ -61,9 +71,14 @@ impl From<serde_json::Error> for ItemError {
     }
 }
 
-pub fn QueryAll(word: &str) -> Vec<Item> {
-    // TODO
-    let vec = Vec::new();
+// TODO: refactor using generics
+pub fn query_all(word: &str) -> Vec<Item> {
+    let mut vec = Vec::new();
+
+    vec.push(Iciba::new().query(word).unwrap());
+    vec.push(YouDao::new().query(word).unwrap());
+    vec.push(Dictionary::new().query(word).unwrap());
+
     vec
 }
 
@@ -73,10 +88,7 @@ mod tests {
 
     #[test]
     fn test_string_join() {
-        let mut vec = Vec::new();
-        vec.push("hello");
-        vec.push("world");
-
-        println!("{}", vec.join("-"));
+        let vec = query_all("hello");
+        println!("{:#?}", vec);
     }
 }

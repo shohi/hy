@@ -12,7 +12,7 @@ path = "src/main.rs"
 clap = "2.33.0"
 actix = "0.8.2"
 actix-web = "0.7.19"
-reqwest = "0.9.16"
+reqwest = "0.9.17"
 
 futures = "0.1.27"
 wait-timeout = "0.2.0"

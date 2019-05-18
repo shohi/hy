@@ -4,7 +4,7 @@ use crate::say;
 
 pub fn translate(word: &str) {
     say::say(word);
-    let vec = Vec::new();
+    let vec = client::query_all(word);
     render::render(&vec);
 }
 

@@ -1,4 +1,4 @@
-use log::info;
+use log::{debug, info};
 use std::process::Command;
 use std::time::Duration;
 use wait_timeout::ChildExt;
@@ -25,7 +25,7 @@ pub fn say(word: &str) {
         }
     };
 
-    info!(
+    debug!(
         "status code of say command for word [{}]: {:?}",
         word, status_code
     );

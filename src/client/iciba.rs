@@ -1,8 +1,8 @@
-use super::{Item, ItemError, Query, TranslatePair};
+use super::{Item, ItemError, Phonetic, Query, TranslatePair};
 use serde_derive::{Deserialize, Serialize};
 use serde_json::Value;
 
-struct Iciba {
+pub(super) struct Iciba {
     base_url: &'static str,
     // key: &'static str,
 }
@@ -18,19 +18,16 @@ impl Iciba {
 }
 
 impl Query for Iciba {
+    // TODO: improve error handling
     fn query(&self, keyword: &str) -> Result<Item, ItemError> {
         let url = format!("{}{}", self.base_url, keyword);
-        println!("url: {}", url);
+        // println!("url: {}", url);
 
-        let mut resp = reqwest::get(&url)?;
-        let body = resp.text()?;
-        let val: Dict = serde_json::from_str(&body)?;
-
-        println!("hello, {:#?}", &val);
+        let val: Dict = reqwest::get(&url)?.json()?;
 
         let mut item = Item::default();
         item.query = keyword.into();
-        item.phonetics = self.phonetic(&val);
+        item.phonetic = self.phonetic(&val);
         item.acceptations = self.acceptation(&val);
         item.sentences = self.sentence(&val);
 
@@ -39,13 +36,14 @@ impl Query for Iciba {
 }
 
 impl Iciba {
-    fn phonetic(&self, dict: &Dict) -> Vec<String> {
+    fn phonetic(&self, dict: &Dict) -> Phonetic {
         let symbol = &dict.base.symbols[0];
 
-        vec![
-            format!("英 {}", &symbol.phen),
-            format!("美 {}", &symbol.pham),
-        ]
+        Phonetic {
+            api: "iciba.com".into(),
+            en: format!("英[ {} ]", &symbol.phen),
+            us: format!("美[ {} ]", &symbol.phus),
+        }
     }
 
     fn acceptation(&self, dict: &Dict) -> Vec<String> {
@@ -112,7 +110,7 @@ struct Symbol {
     phen: String,
 
     #[serde(rename = "ph_am")]
-    pham: String,
+    phus: String,
 
     parts: Vec<Part>,
 }
