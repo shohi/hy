@@ -1,6 +1,5 @@
 use super::{Item, ItemError, Phonetic, Query, TranslatePair};
-use serde_derive::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_derive::Deserialize;
 
 pub(super) struct Iciba {
     base_url: &'static str,

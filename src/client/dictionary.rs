@@ -1,16 +1,23 @@
 use super::{Item, ItemError, Phonetic, Query, TranslatePair};
-use serde_derive::{Deserialize, Serialize};
-use serde_json::{Result as JsonResult, Value};
-use std::str::FromStr;
+use reqwest::{self, Client};
+use serde_derive::Deserialize;
+use std::time::Duration;
 
 pub(super) struct Dictionary {
+    client: Client,
     base_url: &'static str,
     key: &'static str,
 }
 
 impl Dictionary {
     pub fn new() -> Dictionary {
+        let client = Client::builder()
+            .timeout(Duration::from_secs(30)) // FIXME: configurable?
+            .build()
+            .unwrap();
+
         Dictionary {
+            client: client,
             // base_url: "http://www.dictionaryapi.com/api/v1/references/collegiate/xml",
             base_url: "http://www.dictionaryapi.com/api/v3/references/collegiate/json",
             key: "82c5d495-ccf0-4e72-9051-5089e85c2975",
@@ -24,7 +31,13 @@ impl Query for Dictionary {
         // println!("{}", url);
 
         // TODO: check boundary
-        let dicts: Vec<Dict> = reqwest::get(&url)?.json()?;
+        let dicts: Vec<Dict> = self.client.get(&url).send()?.json()?;
+        if dicts.len() == 0 {
+            return Err(ItemError {
+                message: "empty content".to_string(),
+            });
+        }
+
         let val = &dicts[0];
 
         let mut item = Item::default();

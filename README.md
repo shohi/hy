@@ -17,7 +17,7 @@ $> hy [WORD]
 
 ## TODO
 
-- [ ] set timeout for http request
+- [ ] provide command flag to set timeout for http request
 - [ ] improve error handling
 - [ ] support search history and do some stats based on it
 

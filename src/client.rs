@@ -1,6 +1,4 @@
-use reqwest;
-use serde_derive::{Deserialize, Serialize};
-use termion::{color, style};
+use serde_derive::Deserialize;
 
 mod dictionary;
 mod iciba;
@@ -25,32 +23,9 @@ pub struct Item {
 // TODO: implement format trait
 #[derive(Debug, Deserialize, Default)]
 pub struct Phonetic {
-    api: String,
-    en: String,
-    us: String,
-}
-
-// TODO: refactor
-impl Phonetic {
-    pub fn dump(&self) -> String {
-        format!(
-            "{}{}  {}{}  ~  {}{}",
-            color::Fg(color::Magenta),
-            &self.en,
-            self.us,
-            color::Fg(color::LightBlack),
-            self.api,
-            color::Fg(color::Reset),
-        )
-    }
-}
-
-impl Item {
-    pub fn dump(&self) {
-        // TODO
-        let joined = self.acceptations.join("\n");
-        println!("{}", joined);
-    }
+    pub api: String,
+    pub en: String,
+    pub us: String,
 }
 
 #[derive(Debug, Deserialize, Default)]
@@ -59,6 +34,7 @@ pub struct TranslatePair {
     pub to: String,
 }
 
+// TODO: use `failure` to handle error
 #[derive(Debug, Clone)]
 pub struct ItemError {
     pub message: String,
@@ -84,9 +60,17 @@ impl From<serde_json::Error> for ItemError {
 pub fn query_all(word: &str) -> Vec<Item> {
     let mut vec = Vec::new();
 
-    vec.push(Iciba::new().query(word).unwrap());
-    vec.push(YouDao::new().query(word).unwrap());
-    vec.push(Dictionary::new().query(word).unwrap());
+    if let Ok(item) = Iciba::new().query(word) {
+        vec.push(item);
+    }
+
+    if let Ok(item) = YouDao::new().query(word) {
+        vec.push(item);
+    }
+
+    if let Ok(item) = Dictionary::new().query(word) {
+        vec.push(item);
+    }
 
     vec
 }

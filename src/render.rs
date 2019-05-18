@@ -1,6 +1,6 @@
-use crate::client::{Item, ItemError};
-use regex::{self, Regex, RegexBuilder};
-use termion::{color, style};
+use crate::client::{Item, Phonetic};
+use regex::{self, RegexBuilder};
+use termion::color;
 
 // TODO: implement
 pub fn render(items: &[Item]) {
@@ -9,25 +9,40 @@ pub fn render(items: &[Item]) {
     }
 }
 
+fn decorate_phonetic(p: &Phonetic) -> String {
+    format!(
+        "{}{}  {}{}  ~  {}",
+        color::Fg(color::Magenta),
+        &p.en,
+        &p.us,
+        color::Fg(color::LightBlack),
+        &p.api,
+    )
+}
+
+fn decorate_acception(c: &str) -> String {
+    format!(
+        "{}- {}{}",
+        color::Fg(color::LightBlack),
+        color::Fg(color::Green),
+        c,
+    )
+}
+
 fn render_item(item: &Item) {
     println!();
-    println!("{} {}", &item.query, item.phonetic.dump(),);
-    println!();
+    println!("{} {}", &item.query, decorate_phonetic(&item.phonetic));
+    println!("{}", color::Fg(color::Reset));
 
     for s in item.acceptations.iter() {
-        println!(
-            "{}- {}{}",
-            color::Fg(color::LightBlack),
-            color::Fg(color::Green),
-            &s,
-        );
+        println!("{}", decorate_acception(&s))
     }
     println!("{}", color::Fg(color::Reset));
 
     for (i, p) in item.sentences.iter().enumerate() {
         // sequence starts from 1
         print!("{}{}. ", color::Fg(color::LightBlack), i + 1);
-        highlight(p.from.clone(), item.query.clone());
+        highlight(&p.from, &item.query);
         println!("{}{}{}", color::Fg(color::Cyan), " ".repeat(3), &p.to);
     }
 
@@ -35,9 +50,9 @@ fn render_item(item: &Item) {
     println!("{}", color::Fg(color::Reset))
 }
 
-// TODO: highlight query works in examples
+// highlight query word in examples
 // and use &str instead
-fn highlight(s: String, key: String) {
+fn highlight(s: &str, key: &str) {
     let exp = format!("(?P<k>{})", key);
     let re = RegexBuilder::new(exp.as_str())
         .case_insensitive(true)
@@ -45,7 +60,7 @@ fn highlight(s: String, key: String) {
         .expect("invalid regexp");
 
     let result = re.replace_all(
-        s.as_str(),
+        s,
         format!(
             "{}$k{}",
             color::Fg(color::Yellow),
@@ -60,6 +75,7 @@ fn highlight(s: String, key: String) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use termion::style;
 
     #[test]
     fn test_termion() {

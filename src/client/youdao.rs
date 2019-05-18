@@ -1,5 +1,5 @@
 use super::{Item, ItemError, Phonetic, Query, TranslatePair};
-use serde_derive::{Deserialize, Serialize};
+use serde_derive::Deserialize;
 
 pub(super) struct YouDao {
     base_url: &'static str,
