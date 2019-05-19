@@ -91,7 +91,7 @@ struct Dict {
     #[serde(rename = "baesInfo")]
     base: BaseInfo,
 
-    #[serde(rename = "trade_means")]
+    #[serde(rename = "trade_means", default)]
     trades: Vec<TradeMean>,
 
     #[serde(rename = "sentence")]

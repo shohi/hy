@@ -1,3 +1,4 @@
+use log::error;
 use serde_derive::Deserialize;
 
 mod dictionary;
@@ -60,13 +61,23 @@ impl From<serde_json::Error> for ItemError {
 pub fn query_all(word: &str) -> Vec<Item> {
     let mut vec = Vec::new();
 
-    if let Ok(item) = Iciba::new().query(word) {
-        vec.push(item);
-    }
+    match Iciba::new().query(word) {
+        Ok(item) => {
+            vec.push(item);
+        }
+        Err(err) => {
+            error!("err: {:#?}", err);
+        }
+    };
 
-    if let Ok(item) = YouDao::new().query(word) {
-        vec.push(item);
-    }
+    match YouDao::new().query(word) {
+        Ok(item) => {
+            vec.push(item);
+        }
+        Err(err) => {
+            error!("err: {:#?}", err);
+        }
+    };
 
     if let Ok(item) = Dictionary::new().query(word) {
         vec.push(item);

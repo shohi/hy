@@ -75,13 +75,13 @@ struct Dict {
 
 #[derive(Debug, Deserialize)]
 struct Basic {
-    #[serde(rename = "uk-phonetic")]
+    #[serde(rename = "uk-phonetic", default)]
     phen: String,
 
-    #[serde(rename = "us-phonetic")]
+    #[serde(rename = "us-phonetic", default)]
     phus: String,
 
-    #[serde(rename = "explains")]
+    #[serde(rename = "explains", default)]
     means: Vec<String>,
 }
 
