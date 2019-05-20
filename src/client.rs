@@ -9,7 +9,7 @@ use dictionary::Dictionary;
 use iciba::Iciba;
 use youdao::YouDao;
 
-trait Query {
+pub trait Query {
     fn query(&self, keyword: &str) -> Result<Item, ItemError>;
 }
 
@@ -84,6 +84,39 @@ pub fn query_all(word: &str) -> Vec<Item> {
     }
 
     vec
+}
+
+pub fn query_future(word: &str) {
+    let iciba_future = ItemFuture {
+        querier: Iciba::new(),
+        keyword: word,
+    };
+
+    let youdao_future = ItemFuture {
+        querier: YouDao::new(),
+        keyword: word,
+    };
+
+    let dict_future = ItemFuture {
+        querier: Dictionary::new(),
+        keyword: word,
+    };
+}
+
+use futures::{Async, Future, Poll};
+pub struct ItemFuture<'a, T: Query> {
+    pub querier: T,
+    pub keyword: &'a str,
+}
+
+impl<'a, T: Query> Future for ItemFuture<'a, T> {
+    type Item = Item;
+    type Error = ItemError;
+
+    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
+        let item = self.querier.query(self.keyword)?;
+        Ok(Async::Ready(item))
+    }
 }
 
 #[cfg(test)]

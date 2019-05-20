@@ -1,10 +1,13 @@
 use super::{Item, ItemError, Phonetic, Query, TranslatePair};
-use reqwest::{self, Client};
+
+use futures::future::Future;
+use reqwest::{self, r#async::Client as AsyncClient, Client};
 use serde_derive::Deserialize;
 use std::time::Duration;
 
 pub(super) struct Dictionary {
     client: Client,
+    async_client: AsyncClient,
     base_url: &'static str,
     key: &'static str,
 }
@@ -15,9 +18,14 @@ impl Dictionary {
             .timeout(Duration::from_secs(30)) // FIXME: configurable?
             .build()
             .unwrap();
+        let async_client = AsyncClient::builder()
+            .timeout(Duration::from_secs(30)) // FIXME: configurable?
+            .build()
+            .unwrap();
 
         Dictionary {
             client: client,
+            async_client: async_client,
             // base_url: "http://www.dictionaryapi.com/api/v1/references/collegiate/xml",
             base_url: "http://www.dictionaryapi.com/api/v3/references/collegiate/json",
             key: "82c5d495-ccf0-4e72-9051-5089e85c2975",
@@ -30,7 +38,6 @@ impl Query for Dictionary {
         let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
         // println!("{}", url);
 
-        // TODO: check boundary
         let dicts: Vec<Dict> = self.client.get(&url).send()?.json()?;
         if dicts.len() == 0 {
             return Err(ItemError {
@@ -39,7 +46,6 @@ impl Query for Dictionary {
         }
 
         let val = &dicts[0];
-
         let mut item = Item::default();
         item.query = keyword.into();
         item.phonetic = self.phonetic(val);
@@ -51,6 +57,37 @@ impl Query for Dictionary {
 }
 
 impl Dictionary {
+    /* FIXME: not work
+    fn query2(&self, keyword: &str) -> impl Future<Item = Item, Error = ItemError> {
+        let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
+
+        let f = self
+            .client
+            .get(&url)
+            .send()
+            .and_then(|resp| resp.json::<Vec<Dict>>())
+            .map(|d| {
+                if d.len() == 0 {
+                    return Err(ItemError {
+                        message: "empty content".to_string(),
+                    });
+                }
+
+                let val = &d[0];
+                let mut item = Item::default();
+                item.query = keyword.into();
+                item.phonetic = self.phonetic(val);
+                item.acceptations = self.acceptation(val);
+                item.sentences = self.sentence(val);
+
+                Ok(item)
+            })
+            .map_err(|err| Err(err.into()));
+
+        f
+    }
+    */
+
     fn phonetic(&self, _dict: &Dict) -> Phonetic {
         // NOTE: there is no phonetics
         Phonetic {
