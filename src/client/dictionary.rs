@@ -1,7 +1,9 @@
-use super::{Item, ItemError};
-use super::{Parser, Query};
+use super::{Item, ItemError, Query};
+use super::{ItemFuture, Parser};
 use super::{Phonetic, TranslatePair};
 
+use futures::try_ready;
+use futures::{Async, Future, Poll};
 use reqwest::{self, r#async::Client as AsyncClient, r#async::Response, Client};
 use serde_derive::Deserialize;
 use std::time::Duration;
@@ -58,40 +60,17 @@ impl Query for Dictionary {
         Ok(item)
     }
 }
+impl Dictionary {
+    // FIXME: not work
+    fn query_async(&self, keyword: &str) -> impl Future<Item = Item, Error = ItemError> {
+        let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
 
-use futures::try_ready;
-use futures::{Async, Future, Poll};
+        let f = self.async_client.get(&url).send();
 
-struct XxxFuture<T, U>
-where
-    U: Parser,
-{
-    pub response: T,
-    pub parser: U,
-    pub keyword: String,
-}
-
-impl<T, U> Future for XxxFuture<T, U>
-where
-    T: Future<Item = Response, Error = reqwest::Error>,
-    U: Parser,
-{
-    type Item = Item;
-    type Error = ItemError;
-
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        // TODO
-        let mut resp = try_ready!(self.response.poll());
-        let mut json_future = resp.json::<U::Item>();
-        let d = try_ready!(json_future.poll());
-
-        match self.parser.parse(&d) {
-            Ok(mut item) => {
-                // TODO: avoid copy
-                item.query = self.keyword.clone();
-                Ok(Async::Ready(item))
-            }
-            Err(err) => Err(err),
+        ItemFuture {
+            response: f,
+            keyword: keyword.into(),
+            parser: DictParser,
         }
     }
 }
@@ -143,40 +122,27 @@ impl DictParser {
     }
 }
 
-impl Dictionary {
-    // FIXME: not work
-    fn query2(&self, keyword: &str) -> impl Future<Item = Item, Error = ItemError> {
-        let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
-
-        let f = self.async_client.get(&url).send();
-
-        XxxFuture {
-            response: f,
-            keyword: keyword.into(),
-            parser: DictParser,
+struct Display<T>(T);
+impl<T> Future for Display<T>
+where
+    T: Future,
+    T::Item: std::fmt::Debug,
+    T::Error: std::fmt::Debug,
+{
+    type Item = ();
+    type Error = ();
+    fn poll(&mut self) -> Poll<(), ()> {
+        match self.0.poll() {
+            Ok(Async::Ready(value)) => {
+                println!("value: {:#?}", value);
+            }
+            Ok(Async::NotReady) => return Ok(Async::NotReady),
+            Err(err) => {
+                println!("err: {:#?}", err);
+            }
         }
-        /*
-            .and_then(|resp| resp.json::<Vec<Dict>>())
-            .map(|d| {
-                if d.len() == 0 {
-                    return Err(ItemError {
-                        message: "empty content".to_string(),
-                    });
-                }
 
-                let val = &d[0];
-                let mut item = Item::default();
-                item.query = keyword.into();
-                item.phonetic = self.phonetic(val);
-                item.acceptations = self.acceptation(val);
-                item.sentences = self.sentence(val);
-
-                Ok(item)
-            })
-            .map_err(|err| Err(err.into()));
-
-        f
-        */
+        Ok(().into())
     }
 }
 
@@ -194,10 +160,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_xxx_query() {
+    fn test_sync_query() {
         let keyword = "hello";
         let p = Dictionary::new();
         let result = p.query(keyword);
         println!("result -> {:#?}", &result);
+    }
+
+    #[test]
+    // FIXME: not work
+    fn test_async_query() {
+        let keyword = "hello";
+        let p = Dictionary::new();
+
+        let i = p.query_async(keyword);
+        let f = Display(i);
+        tokio::run(f);
     }
 }

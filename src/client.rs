@@ -1,4 +1,7 @@
+use futures::try_ready;
+use futures::{Async, Future, Poll};
 use log::error;
+use reqwest::r#async::Response;
 use serde_derive::Deserialize;
 
 mod dictionary;
@@ -91,38 +94,41 @@ pub fn query_all(word: &str) -> Vec<Item> {
     vec
 }
 
-pub fn query_future(word: &str) {
-    let iciba_future = ItemFuture {
-        querier: Iciba::new(),
-        keyword: word,
-    };
-
-    let youdao_future = ItemFuture {
-        querier: YouDao::new(),
-        keyword: word,
-    };
-
-    let dict_future = ItemFuture {
-        querier: Dictionary::new(),
-        keyword: word,
-    };
+struct ItemFuture<T, U>
+where
+    U: Parser,
+{
+    pub response: T,
+    pub parser: U,
+    pub keyword: String,
 }
 
-use futures::{Async, Future, Poll};
-pub struct ItemFuture<'a, T: Query> {
-    pub querier: T,
-    pub keyword: &'a str,
-}
-
-impl<'a, T: Query> Future for ItemFuture<'a, T> {
+impl<T, U> Future for ItemFuture<T, U>
+where
+    T: Future<Item = Response, Error = reqwest::Error>,
+    U: Parser,
+{
     type Item = Item;
     type Error = ItemError;
 
     fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        let item = self.querier.query(self.keyword)?;
-        Ok(Async::Ready(item))
+        let mut resp = try_ready!(self.response.poll());
+        let mut json_future = resp.json::<U::Item>();
+        let d = try_ready!(json_future.poll());
+
+        match self.parser.parse(&d) {
+            Ok(mut item) => {
+                // TODO: avoid copy
+                item.query = self.keyword.clone();
+                Ok(Async::Ready(item))
+            }
+            Err(err) => Err(err),
+        }
     }
 }
+
+// TODO
+pub fn query_future(word: &str) {}
 
 #[cfg(test)]
 mod tests {
