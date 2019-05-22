@@ -13,6 +13,11 @@ pub trait Query {
     fn query(&self, keyword: &str) -> Result<Item, ItemError>;
 }
 
+pub trait Parser {
+    type Item: serde::de::DeserializeOwned;
+    fn parse(&self, d: &Self::Item) -> Result<Item, ItemError>;
+}
+
 #[derive(Debug, Deserialize, Default)]
 pub struct Item {
     pub query: String,
