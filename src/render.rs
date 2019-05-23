@@ -29,7 +29,7 @@ fn decorate_acception(c: &str) -> String {
     )
 }
 
-fn render_item(item: &Item) {
+pub fn render_item(item: &Item) {
     println!();
     println!("{} {}", &item.query, decorate_phonetic(&item.phonetic));
     println!("{}", color::Fg(color::Reset));

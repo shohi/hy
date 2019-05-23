@@ -4,9 +4,9 @@ use log::error;
 use reqwest::r#async::Response;
 use serde_derive::Deserialize;
 
-mod dictionary;
-mod iciba;
-mod youdao;
+pub mod dictionary;
+pub mod iciba;
+pub mod youdao;
 
 use dictionary::Dictionary;
 use iciba::Iciba;
@@ -14,6 +14,10 @@ use youdao::YouDao;
 
 pub trait Query {
     fn query(&self, keyword: &str) -> Result<Item, ItemError>;
+}
+
+pub trait AsyncQuery {
+    fn query_async(&self, keyword: &str) -> Box<Future<Item = Item, Error = ItemError> + Send>;
 }
 
 pub trait Parser {

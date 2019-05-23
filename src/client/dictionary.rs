@@ -1,5 +1,5 @@
+use super::{AsyncQuery, ItemFuture, Parser};
 use super::{Item, ItemError, Query};
-use super::{ItemFuture, Parser};
 use super::{Phonetic, TranslatePair};
 
 use futures::try_ready;
@@ -9,7 +9,8 @@ use serde_derive::Deserialize;
 use std::time::Duration;
 use tokio::runtime::Runtime;
 
-pub(super) struct Dictionary {
+// pub(super) struct Dictionary {
+pub struct Dictionary {
     client: Client,
     async_client: AsyncClient,
     base_url: &'static str,
@@ -24,7 +25,7 @@ impl Dictionary {
             .build()
             .unwrap();
         let async_client = AsyncClient::builder()
-            .timeout(Duration::from_secs(10)) // FIXME: configurable?
+            .timeout(Duration::from_secs(1)) // FIXME: configurable?
             .build()
             .unwrap();
 
@@ -61,18 +62,18 @@ impl Query for Dictionary {
         Ok(item)
     }
 }
-impl Dictionary {
+impl AsyncQuery for Dictionary {
     // FIXME: not work
-    fn query_async(&self, keyword: &str) -> impl Future<Item = Item, Error = ItemError> {
+    fn query_async(&self, keyword: &str) -> Box<Future<Item = Item, Error = ItemError> + Send> {
         let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
 
         let f = self.async_client.get(&url).send();
 
-        ItemFuture {
+        Box::new(ItemFuture {
             response: f,
             keyword: keyword.into(),
             parser: DictParser,
-        }
+        })
     }
 }
 
@@ -173,8 +174,30 @@ mod tests {
         let keyword = "hello";
         let p = Dictionary::new();
 
-        let i = p.query_async(keyword);
-        let f = Display(i);
+        // TODO: add map error
+        let i = p
+            .query_async(keyword)
+            .map(|item| {
+                println!("value: {:#?}", item);
+                ()
+            })
+            .map_err(|err| {
+                println!("err: hello {:#?}", err);
+                ()
+            });
+
+        let j = p
+            .query_async("world")
+            .map(|item| {
+                println!("value: {:#?}", item);
+                ()
+            })
+            .map_err(|err| {
+                println!("err: world {:#?}", err);
+                ()
+            });
+
+        // let f = Display(i);
 
         // NOTE: shutdown_on_idle does not work in tests
         // https://github.com/tokio-rs/tokio/issues/278
@@ -186,10 +209,12 @@ mod tests {
         // tokio::run(f);
 
         let mut rt = Runtime::new().unwrap();
-        // rt.spawn(f);
+        // rt.spawn(i);
+        // rt.spawn(j);
+
         // Wait until the runtime becomes idle and shut it down.
         // rt.shutdown_on_idle().wait().unwrap();
 
-        rt.block_on(f);
+        rt.block_on(j);
     }
 }
