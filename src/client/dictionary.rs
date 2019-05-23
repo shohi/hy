@@ -7,6 +7,7 @@ use futures::{Async, Future, Poll};
 use reqwest::{self, r#async::Client as AsyncClient, r#async::Response, Client};
 use serde_derive::Deserialize;
 use std::time::Duration;
+use tokio::runtime::Runtime;
 
 pub(super) struct Dictionary {
     client: Client,
@@ -23,7 +24,7 @@ impl Dictionary {
             .build()
             .unwrap();
         let async_client = AsyncClient::builder()
-            .timeout(Duration::from_secs(30)) // FIXME: configurable?
+            .timeout(Duration::from_secs(10)) // FIXME: configurable?
             .build()
             .unwrap();
 
@@ -168,13 +169,27 @@ mod tests {
     }
 
     #[test]
-    // FIXME: not work
     fn test_async_query() {
         let keyword = "hello";
         let p = Dictionary::new();
 
         let i = p.query_async(keyword);
         let f = Display(i);
-        tokio::run(f);
+
+        // NOTE: shutdown_on_idle does not work in tests
+        // https://github.com/tokio-rs/tokio/issues/278
+        // https://docs.rs/tokio/0.1.20/tokio/fn.run.html
+        // mentioned in doc:
+        // `Note that the function will not return immediately once future has completed.`
+        // `Instead it waits for the entire runtime to become idle.`
+
+        // tokio::run(f);
+
+        let mut rt = Runtime::new().unwrap();
+        // rt.spawn(f);
+        // Wait until the runtime becomes idle and shut it down.
+        // rt.shutdown_on_idle().wait().unwrap();
+
+        rt.block_on(f);
     }
 }
