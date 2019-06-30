@@ -10,22 +10,22 @@ path = "src/main.rs"
 
 [dependencies]
 clap = "2.33.0"
-actix = "0.8.2"
-actix-web = "0.7.19"
-reqwest = "0.9.17"
+actix = "0.8.3"
+actix-web = "1.0.3"
+reqwest = "0.9.18"
 
-futures = "0.1.27"
+futures = "0.1.28"
 wait-timeout = "0.2.0"
 
-serde = "1.0.91"
-serde_derive = "1.0.91"
+serde = "1.0.94"
+serde_derive = "1.0.94"
 serde_json = "1.0.39"
 
 log = "0.4.6"
 env_logger = "0.6.1"
-chrono = "0.4.6"
+chrono = "0.4.7"
 
-termion = "1.5.2"
-regex = "1"
+termion = "1.5.3"
+regex = "1.1.7"
 
-tokio = "0.1"
+tokio = "0.1.21"
