@@ -17,7 +17,7 @@ pub trait Query {
 }
 
 pub trait AsyncQuery {
-    fn query_async(&self, keyword: &str) -> Box<Future<Item = Item, Error = ItemError> + Send>;
+    fn query_async(&self, keyword: &str) -> Box<dyn Future<Item = Item, Error = ItemError> + Send>;
 }
 
 pub trait Parser {
@@ -70,6 +70,7 @@ impl From<serde_json::Error> for ItemError {
 }
 
 // TODO: refactor using generics
+#[allow(dead_code)]
 pub fn query_all(word: &str) -> Vec<Item> {
     let mut vec = Vec::new();
 
@@ -132,7 +133,8 @@ where
 }
 
 // TODO
-pub fn query_future(word: &str) {}
+#[allow(dead_code)]
+pub fn query_future(_word: &str) {}
 
 #[cfg(test)]
 mod tests {

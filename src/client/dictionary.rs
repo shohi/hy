@@ -4,10 +4,12 @@ use super::{Phonetic, TranslatePair};
 
 use futures::try_ready;
 use futures::{Async, Future, Poll};
+
 use reqwest::{self, r#async::Client as AsyncClient, r#async::Response, Client};
 use serde_derive::Deserialize;
 use std::time::Duration;
 use tokio::runtime::Runtime;
+
 
 // pub(super) struct Dictionary {
 pub struct Dictionary {
@@ -64,7 +66,7 @@ impl Query for Dictionary {
 }
 impl AsyncQuery for Dictionary {
     // FIXME: not work
-    fn query_async(&self, keyword: &str) -> Box<Future<Item = Item, Error = ItemError> + Send> {
+    fn query_async(&self, keyword: &str) -> Box<dyn Future<Item = Item, Error = ItemError> + Send> {
         let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
 
         let f = self.async_client.get(&url).send();
@@ -197,6 +199,7 @@ mod tests {
                 ()
             });
 
+
         // let f = Display(i);
 
         // NOTE: shutdown_on_idle does not work in tests
@@ -206,15 +209,17 @@ mod tests {
         // `Note that the function will not return immediately once future has completed.`
         // `Instead it waits for the entire runtime to become idle.`
 
+        tokio::run(i.join(j));
+
         // tokio::run(f);
 
-        let mut rt = Runtime::new().unwrap();
+        // let mut rt = Runtime::new().unwrap();
         // rt.spawn(i);
         // rt.spawn(j);
 
         // Wait until the runtime becomes idle and shut it down.
         // rt.shutdown_on_idle().wait().unwrap();
 
-        rt.block_on(j);
+        // rt.block_on(j);
     }
 }
