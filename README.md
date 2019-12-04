@@ -15,6 +15,8 @@ $> hy [WORD]
 
 ```
 
+require `rust 1.39+` (async/await)
+
 ## TODO
 
 - [ ] provide command flag to set timeout for http request

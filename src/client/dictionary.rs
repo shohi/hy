@@ -1,20 +1,15 @@
-use super::{AsyncQuery, ItemFuture, Parser};
-use super::{Item, ItemError, Query};
-use super::{Phonetic, TranslatePair};
+use super::{Item, ItemError};
+use super::{Parser, Phonetic, Query, TranslatePair};
 
-use futures::try_ready;
-use futures::{Async, Future, Poll};
-
-use reqwest::{self, r#async::Client as AsyncClient, r#async::Response, Client};
+use reqwest::{self, Client};
 use serde_derive::Deserialize;
+use serde_json;
 use std::time::Duration;
-use tokio::runtime::Runtime;
-
+use async_trait::async_trait;
 
 // pub(super) struct Dictionary {
 pub struct Dictionary {
     client: Client,
-    async_client: AsyncClient,
     base_url: &'static str,
     key: &'static str,
     parser: DictParser,
@@ -26,14 +21,9 @@ impl Dictionary {
             .timeout(Duration::from_secs(30)) // FIXME: configurable?
             .build()
             .unwrap();
-        let async_client = AsyncClient::builder()
-            .timeout(Duration::from_secs(1)) // FIXME: configurable?
-            .build()
-            .unwrap();
 
         Dictionary {
-            client: client,
-            async_client: async_client,
+            client,
             // base_url: "http://www.dictionaryapi.com/api/v1/references/collegiate/xml",
             base_url: "http://www.dictionaryapi.com/api/v3/references/collegiate/json",
             key: "82c5d495-ccf0-4e72-9051-5089e85c2975",
@@ -42,12 +32,15 @@ impl Dictionary {
     }
 }
 
+#[async_trait]
 impl Query for Dictionary {
-    fn query(&self, keyword: &str) -> Result<Item, ItemError> {
+    async fn query(&self, keyword: &str) -> Result<Item, ItemError> {
         let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
         // println!("{}", url);
 
-        let dicts: Vec<Dict> = self.client.get(&url).send()?.json()?;
+        let resp: String = self.client.get(&url).send().await?.text().await?;
+        let dicts: Vec<Dict> = serde_json::from_str(&resp).unwrap();
+
         if dicts.len() == 0 {
             return Err(ItemError {
                 message: "empty content".to_string(),
@@ -62,20 +55,6 @@ impl Query for Dictionary {
         item.sentences = self.parser.sentence(val);
 
         Ok(item)
-    }
-}
-impl AsyncQuery for Dictionary {
-    // FIXME: not work
-    fn query_async(&self, keyword: &str) -> Box<dyn Future<Item = Item, Error = ItemError> + Send> {
-        let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
-
-        let f = self.async_client.get(&url).send();
-
-        Box::new(ItemFuture {
-            response: f,
-            keyword: keyword.into(),
-            parser: DictParser,
-        })
     }
 }
 
@@ -126,30 +105,6 @@ impl DictParser {
     }
 }
 
-struct Display<T>(T);
-impl<T> Future for Display<T>
-where
-    T: Future,
-    T::Item: std::fmt::Debug,
-    T::Error: std::fmt::Debug,
-{
-    type Item = ();
-    type Error = ();
-    fn poll(&mut self) -> Poll<(), ()> {
-        match self.0.poll() {
-            Ok(Async::Ready(value)) => {
-                println!("value: {:#?}", value);
-            }
-            Ok(Async::NotReady) => return Ok(Async::NotReady),
-            Err(err) => {
-                println!("err: {:#?}", err);
-            }
-        }
-
-        Ok(().into())
-    }
-}
-
 #[derive(Debug, Deserialize)]
 struct Dict {
     #[serde(default, rename = "fl")]
@@ -162,64 +117,13 @@ struct Dict {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tokio;
 
-    #[test]
-    fn test_sync_query() {
+    #[tokio::test]
+    async fn test_query() {
         let keyword = "hello";
         let p = Dictionary::new();
-        let result = p.query(keyword);
+        let result = p.query(keyword).await;
         println!("result -> {:#?}", &result);
-    }
-
-    #[test]
-    fn test_async_query() {
-        let keyword = "hello";
-        let p = Dictionary::new();
-
-        // TODO: add map error
-        let i = p
-            .query_async(keyword)
-            .map(|item| {
-                println!("value: {:#?}", item);
-                ()
-            })
-            .map_err(|err| {
-                println!("err: hello {:#?}", err);
-                ()
-            });
-
-        let j = p
-            .query_async("world")
-            .map(|item| {
-                println!("value: {:#?}", item);
-                ()
-            })
-            .map_err(|err| {
-                println!("err: world {:#?}", err);
-                ()
-            });
-
-
-        // let f = Display(i);
-
-        // NOTE: shutdown_on_idle does not work in tests
-        // https://github.com/tokio-rs/tokio/issues/278
-        // https://docs.rs/tokio/0.1.20/tokio/fn.run.html
-        // mentioned in doc:
-        // `Note that the function will not return immediately once future has completed.`
-        // `Instead it waits for the entire runtime to become idle.`
-
-        tokio::run(i.join(j));
-
-        // tokio::run(f);
-
-        // let mut rt = Runtime::new().unwrap();
-        // rt.spawn(i);
-        // rt.spawn(j);
-
-        // Wait until the runtime becomes idle and shut it down.
-        // rt.shutdown_on_idle().wait().unwrap();
-
-        // rt.block_on(j);
     }
 }

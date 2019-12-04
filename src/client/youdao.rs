@@ -1,5 +1,8 @@
 use super::{Item, ItemError, Phonetic, Query, TranslatePair};
+
+use async_trait::async_trait;
 use serde_derive::Deserialize;
+use serde_json;
 
 pub(super) struct YouDao {
     base_url: &'static str,
@@ -16,17 +19,18 @@ impl YouDao {
         }
     }
 }
-
+#[async_trait]
 impl Query for YouDao {
     // TODO: add timeout for http request
-    fn query(&self, keyword: &str) -> Result<Item, ItemError> {
+    async fn query(&self, keyword: &str) -> Result<Item, ItemError> {
         let url = format!(
             "{}?keyfrom={}&key={}&type=data&doctype=json&version=1.1&q={}",
             self.base_url, self.key_from, self.key, keyword
         );
         // println!("url: {}", url);
 
-        let dict: Dict = reqwest::get(&url)?.json()?;
+        let resp: String = reqwest::get(&url).await?.text().await?;
+        let dict: Dict = serde_json::from_str(&resp).unwrap();
 
         let mut item = Item::default();
         item.query = keyword.into();
@@ -96,11 +100,12 @@ struct Sentence {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tokio;
 
-    #[test]
-    fn test_query() {
+    #[tokio::test]
+    async fn test_query() {
         let yd = YouDao::new();
-        let result = yd.query("hello");
+        let result = yd.query("hello").await;
         println!("result -> {:#?}", &result);
     }
 }

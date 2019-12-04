@@ -1,8 +1,6 @@
-use futures::try_ready;
-use futures::{Async, Future, Poll};
 use log::error;
-use reqwest::r#async::Response;
 use serde_derive::Deserialize;
+use async_trait::async_trait;
 
 pub mod dictionary;
 pub mod iciba;
@@ -12,12 +10,9 @@ use dictionary::Dictionary;
 use iciba::Iciba;
 use youdao::YouDao;
 
+#[async_trait]
 pub trait Query {
-    fn query(&self, keyword: &str) -> Result<Item, ItemError>;
-}
-
-pub trait AsyncQuery {
-    fn query_async(&self, keyword: &str) -> Box<dyn Future<Item = Item, Error = ItemError> + Send>;
+    async fn query(&self, keyword: &str) -> Result<Item, ItemError>;
 }
 
 pub trait Parser {
@@ -70,11 +65,10 @@ impl From<serde_json::Error> for ItemError {
 }
 
 // TODO: refactor using generics
-#[allow(dead_code)]
-pub fn query_all(word: &str) -> Vec<Item> {
+pub async fn query_all(word: &str) -> Vec<Item> {
     let mut vec = Vec::new();
 
-    match Iciba::new().query(word) {
+    match Iciba::new().query(word).await {
         Ok(item) => {
             vec.push(item);
         }
@@ -83,7 +77,7 @@ pub fn query_all(word: &str) -> Vec<Item> {
         }
     };
 
-    match YouDao::new().query(word) {
+    match YouDao::new().query(word).await{
         Ok(item) => {
             vec.push(item);
         }
@@ -92,57 +86,22 @@ pub fn query_all(word: &str) -> Vec<Item> {
         }
     };
 
-    if let Ok(item) = Dictionary::new().query(word) {
+    if let Ok(item) = Dictionary::new().query(word).await {
         vec.push(item);
     }
 
     vec
 }
 
-struct ItemFuture<T, U>
-where
-    U: Parser,
-{
-    pub response: T,
-    pub parser: U,
-    pub keyword: String,
-}
-
-impl<T, U> Future for ItemFuture<T, U>
-where
-    T: Future<Item = Response, Error = reqwest::Error>,
-    U: Parser,
-{
-    type Item = Item;
-    type Error = ItemError;
-
-    fn poll(&mut self) -> Poll<Self::Item, Self::Error> {
-        let mut resp = try_ready!(self.response.poll());
-        let mut json_future = resp.json::<U::Item>();
-        let d = try_ready!(json_future.poll());
-
-        match self.parser.parse(&d) {
-            Ok(mut item) => {
-                // TODO: avoid copy
-                item.query = self.keyword.clone();
-                Ok(Async::Ready(item))
-            }
-            Err(err) => Err(err),
-        }
-    }
-}
-
-// TODO
-#[allow(dead_code)]
-pub fn query_future(_word: &str) {}
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tokio;
 
-    #[test]
-    fn test_string_join() {
-        let vec = query_all("hello");
+    #[tokio::test]
+    async fn test_string_join() {
+        let vec = query_all("hello").await;
         println!("{:#?}", vec);
     }
 }

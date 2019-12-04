@@ -1,11 +1,12 @@
 use super::{Item, ItemError, Phonetic, Query, TranslatePair};
+
 use serde_derive::Deserialize;
+use async_trait::async_trait;
 
 pub(super) struct Iciba {
     base_url: &'static str,
     // key: &'static str,
 }
-
 impl Iciba {
     pub fn new() -> Iciba {
         Iciba {
@@ -16,13 +17,15 @@ impl Iciba {
     }
 }
 
+#[async_trait]
 impl Query for Iciba {
     // TODO: improve error handling
-    fn query(&self, keyword: &str) -> Result<Item, ItemError> {
+    async fn query(&self, keyword: &str) -> Result<Item, ItemError> {
         let url = format!("{}{}", self.base_url, keyword);
         // println!("url: {}", url);
 
-        let val: Dict = reqwest::get(&url)?.json()?;
+        let resp: String = reqwest::get(&url).await?.text().await?;
+        let val: Dict = serde_json::from_str(&resp).unwrap();
 
         let mut item = Item::default();
         item.query = keyword.into();
@@ -141,11 +144,12 @@ struct Sentence {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tokio;
 
-    #[test]
-    fn test_yyy_query() {
+    #[tokio::test]
+    async fn test_yyy_query() {
         let cb = Iciba::new();
-        let val = cb.query("hello");
+        let val = cb.query("hello").await;
         println!("result -> {:#?}", &val);
     }
 }

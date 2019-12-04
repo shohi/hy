@@ -36,9 +36,9 @@ mod tests {
     use super::*;
     use env_logger::Builder;
     use log::LevelFilter;
-    use std::sync::{Once, ONCE_INIT};
+    use std::sync::Once;
 
-    static INIT: Once = ONCE_INIT;
+    static INIT: Once = Once::new();
 
     fn setup() {
         INIT.call_once(|| {

@@ -4,6 +4,7 @@ use chrono::Local;
 use env_logger::Builder;
 use log::LevelFilter;
 use std::io::Write;
+use tokio;
 
 mod client;
 mod render;
@@ -25,7 +26,8 @@ fn setup_logger() {
         .init();
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     setup_logger();
 
     let matches = App::new("hy")
@@ -41,5 +43,5 @@ fn main() {
         .get_matches();
 
     let word = matches.value_of("WORD").unwrap();
-    service::translate(word);
+    service::translate(word).await;
 }
