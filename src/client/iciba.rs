@@ -39,6 +39,13 @@ impl Query for Iciba {
 
 impl Iciba {
     fn phonetic(&self, dict: &Dict) -> Phonetic {
+        // FIXME: check length
+        if dict.base.symbols.len() == 0 {
+            let mut p = Phonetic::default();
+            p.api = "iciba.com".into();
+            return p
+        }
+
         let symbol = &dict.base.symbols[0];
 
         Phonetic {
@@ -50,6 +57,10 @@ impl Iciba {
 
     fn acceptation(&self, dict: &Dict) -> Vec<String> {
         let mut result = Vec::new();
+
+        if dict.base.symbols.len() == 0 {
+            return result
+        }
 
         let parts = &dict.base.symbols[0].parts;
 
@@ -70,13 +81,13 @@ impl Iciba {
 
         /* TODO
          * Why not work? dict is borrowed?
-        sents
-            .into_iter()
-            .map(|s| TranslatePair {
-                from: s.en,
-                to: s.cn,
-            })
-            .collect()
+         sents
+         .into_iter()
+         .map(|s| TranslatePair {
+         from: s.en,
+         to: s.cn,
+         })
+         .collect()
          */
         sents
             .iter()
@@ -84,60 +95,66 @@ impl Iciba {
                 from: s.en.clone(),
                 to: s.cn.clone(),
             })
-            .collect()
+        .collect()
     }
 }
 
-#[derive(Debug, Deserialize)]
+// TODO: default for all fields?
+#[derive(Default, Debug, Deserialize)]
 struct Dict {
     // NOTE: typo in its API
-    #[serde(rename = "baesInfo")]
+    #[serde(default, rename = "baesInfo")]
     base: BaseInfo,
 
-    #[serde(rename = "trade_means", default)]
+    #[serde(default, rename = "trade_means")]
     trades: Vec<TradeMean>,
 
-    #[serde(rename = "sentence")]
+    #[serde(default, rename = "sentence")]
     sentences: Vec<Sentence>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Default, Debug, Deserialize)]
 struct BaseInfo {
+    #[serde(default)]
     symbols: Vec<Symbol>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Default, Debug, Deserialize)]
 struct Symbol {
-    #[serde(rename = "ph_en")]
+    #[serde(default, rename = "ph_en")]
     phen: String,
 
-    #[serde(rename = "ph_am")]
+    #[serde(default, rename = "ph_am")]
     phus: String,
 
+    #[serde(default)]
     parts: Vec<Part>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Default, Debug, Deserialize)]
 struct Part {
+    #[serde(default)]
     part: String,
+
+    #[serde(default)]
     means: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Default, Debug, Deserialize)]
 struct TradeMean {
-    #[serde(rename = "word_trade")]
+    #[serde(default, rename = "word_trade")]
     word: String,
 
-    #[serde(rename = "word_mean")]
+    #[serde(default, rename = "word_mean")]
     mean: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Default, Debug, Deserialize)]
 struct Sentence {
-    #[serde(rename = "Network_en")]
+    #[serde(default, rename = "Network_en")]
     en: String,
 
-    #[serde(rename = "Network_cn")]
+    #[serde(default, rename = "Network_cn")]
     cn: String,
 }
 

@@ -26,6 +26,7 @@ pub struct Item {
 // TODO: implement format trait
 #[derive(Debug, Deserialize, Default)]
 pub struct Phonetic {
+    // TODO: more efficient type instead of String?
     pub api: String,
     pub en: String,
     pub us: String,

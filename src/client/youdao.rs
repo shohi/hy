@@ -71,13 +71,14 @@ impl YouDao {
 
 #[derive(Debug, Deserialize)]
 struct Dict {
+    #[serde(default)]
     basic: Basic,
 
     #[serde(rename = "web")]
     sentences: Vec<Sentence>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Default, Debug, Deserialize)]
 struct Basic {
     #[serde(rename = "uk-phonetic", default)]
     phen: String,
@@ -91,6 +92,7 @@ struct Basic {
 
 #[derive(Debug, Deserialize)]
 struct Sentence {
+    #[serde(default)]
     key: String,
 
     #[serde(rename = "value")]
