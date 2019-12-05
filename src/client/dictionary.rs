@@ -1,5 +1,4 @@
-use super::{Item, ItemError};
-use super::{Parser, Phonetic, Query, TranslatePair};
+use super::{Item, ItemError, Query, Parser, TranslatePair, Phonetic};
 
 use reqwest::{self, Client};
 use serde_derive::Deserialize;
@@ -7,8 +6,7 @@ use serde_json;
 use std::time::Duration;
 use async_trait::async_trait;
 
-// pub(super) struct Dictionary {
-pub struct Dictionary {
+pub(super) struct Dictionary {
     client: Client,
     base_url: &'static str,
     key: &'static str,

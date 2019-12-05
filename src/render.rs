@@ -2,13 +2,6 @@ use crate::client::{Item, Phonetic};
 use regex::{self, RegexBuilder};
 use termion::color;
 
-// TODO: implement
-pub fn render(items: &[Item]) {
-    for m in items.iter() {
-        render_item(m);
-    }
-}
-
 fn decorate_phonetic(p: &Phonetic) -> String {
     format!(
         "{}{}  {}{}  ~  {}",
@@ -83,12 +76,6 @@ mod tests {
         println!("{}Blue", color::Fg(color::Blue));
         println!("{}Blue'n'Bold{}", style::Bold, style::Reset);
         println!("{}Just plain italic", style::Italic);
-    }
-
-    #[test]
-    fn test_render() {
-        let vec = Vec::new();
-        render(&vec);
     }
 
     #[test]

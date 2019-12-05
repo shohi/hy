@@ -43,5 +43,5 @@ async fn main() {
         .get_matches();
 
     let word = matches.value_of("WORD").unwrap();
-    service::translate(word).await;
+    client::translate(word).await;
 }

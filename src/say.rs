@@ -1,7 +1,8 @@
 use log::{debug, info};
-use std::process::Command;
+// TODO: once tokio upgraded to v0.2.0. this should be updated.
+use tokio_net::process::Command;
+use tokio::prelude::*;
 use std::time::Duration;
-use wait_timeout::ChildExt;
 
 #[cfg(not(target_os = "macos"))]
 pub fn say(_: &str) {
@@ -9,20 +10,26 @@ pub fn say(_: &str) {
 }
 
 #[cfg(target_os = "macos")]
-pub fn say(word: &str) {
-    let mut child = Command::new("say")
-        .arg(word)
-        .spawn()
-        .expect("say command failed to start");
+pub async fn say(word: &str) {
+    let mut cmd = Command::new("say");
 
-    let one_sec = Duration::from_secs(2);
-    let status_code = match child.wait_timeout(one_sec).unwrap() {
-        Some(status) => status.code(),
-        None => {
-            // child hasn't exited yet
-            child.kill().unwrap();
-            child.wait().unwrap().code()
-        }
+    let status = cmd
+        .arg(word)
+        .status()
+        .timeout(Duration::from_secs(2))
+        .await
+        .expect("say command failed to run");
+
+
+    let status_code = match status {
+        Ok(s) => match s.code() {
+            Some(c) => c,
+            None => 0,
+        },
+        Err(e) => {
+            info!("call say error: {:?}", e);
+            -1
+        },
     };
 
     debug!(
@@ -37,6 +44,7 @@ mod tests {
     use env_logger::Builder;
     use log::LevelFilter;
     use std::sync::Once;
+    use tokio;
 
     static INIT: Once = Once::new();
 
@@ -46,9 +54,9 @@ mod tests {
         });
     }
 
-    #[test]
-    fn test_say() {
+    #[tokio::test]
+    async fn test_say() {
         setup();
-        say("hello");
+        say("hello").await;
     }
 }

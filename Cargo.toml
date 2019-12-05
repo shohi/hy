@@ -14,7 +14,6 @@ actix = "0.8.3"
 actix-web = "1.0.9"
 reqwest = "0.10.0-alpha.2"
 futures = "0.3.1"
-wait-timeout = "0.2.0"
 
 serde = "1.0.103"
 serde_derive = "1.0.103"
@@ -26,6 +25,8 @@ env_logger = "0.7.1"
 chrono = "0.4.10"
 termion = "1.5.4"
 regex = "1.3.1"
-tokio = "0.2.0-alpha.6"
 
-async-trait = "0.1.19"
+tokio = "0.2.0-alpha.6"
+tokio-net = {version = "0.2.0-alpha.6", features = ["process"]}
+
+async-trait = "0.1.21"

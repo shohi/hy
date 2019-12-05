@@ -1,14 +1,9 @@
-use log::error;
 use serde_derive::Deserialize;
 use async_trait::async_trait;
 
 pub mod dictionary;
 pub mod iciba;
 pub mod youdao;
-
-use dictionary::Dictionary;
-use iciba::Iciba;
-use youdao::YouDao;
 
 #[async_trait]
 pub trait Query {
@@ -64,35 +59,54 @@ impl From<serde_json::Error> for ItemError {
     }
 }
 
-// TODO: refactor using generics
-pub async fn query_all(word: &str) -> Vec<Item> {
-    let mut vec = Vec::new();
+use crate::render;
+use crate::say;
+use dictionary::Dictionary;
+use iciba::Iciba;
+use youdao::YouDao;
 
-    match Iciba::new().query(word).await {
+use log::error;
+use futures::{
+    FutureExt,
+    pin_mut,
+    select,
+};
+
+fn render_result(res: Result<Item, ItemError>) {
+    match res{
         Ok(item) => {
-            vec.push(item);
+            render::render_item(&item)
         }
         Err(err) => {
             error!("err: {:#?}", err);
         }
     };
-
-    match YouDao::new().query(word).await{
-        Ok(item) => {
-            vec.push(item);
-        }
-        Err(err) => {
-            error!("err: {:#?}", err);
-        }
-    };
-
-    if let Ok(item) = Dictionary::new().query(word).await {
-        vec.push(item);
-    }
-
-    vec
 }
 
+// TODO: refactor
+pub async fn translate(word: &str) {
+    let ic_client = Iciba::new();
+    let yd_client = YouDao::new();
+    let dc_client = Dictionary::new();
+
+    let s = say::say(word).fuse();
+
+    let ic = ic_client.query(word).fuse();
+    let yd = yd_client.query(word).fuse();
+    let dc = dc_client.query(word).fuse();
+
+    pin_mut!(s, ic, yd, dc);
+
+    loop {
+        select! {
+            _ = s => {},
+            item = ic => render_result(item),
+            item = yd => render_result(item),
+            item = dc => render_result(item),
+            complete => break,
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -100,8 +114,7 @@ mod tests {
     use tokio;
 
     #[tokio::test]
-    async fn test_string_join() {
-        let vec = query_all("hello").await;
-        println!("{:#?}", vec);
+    async fn test_translate() {
+        translate("hello").await;
     }
 }
