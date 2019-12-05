@@ -74,7 +74,7 @@ struct Dict {
     #[serde(default)]
     basic: Basic,
 
-    #[serde(rename = "web")]
+    #[serde(default, rename = "web")]
     sentences: Vec<Sentence>,
 }
 
@@ -90,12 +90,12 @@ struct Basic {
     means: Vec<String>,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Default, Debug, Deserialize)]
 struct Sentence {
     #[serde(default)]
     key: String,
 
-    #[serde(rename = "value")]
+    #[serde(default, rename = "value")]
     values: Vec<String>,
 }
 
