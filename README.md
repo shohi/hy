@@ -13,17 +13,20 @@ $> cargo install
 # play
 $> hy [WORD]
 
+# help
+$> hy -h
+
 ```
 
 require `rust 1.39+` (async/await)
 
 ## TODO
 
-- [ ] provide command flag to set timeout for http request
+- [x] provide command flag to set timeout for http request
 - [ ] improve error handling
 - [ ] support search history and do some stats based on it
 - [ ] output result in async way
-- [ ] add version info
+- [x] add version info
 
 ## Thanks
 

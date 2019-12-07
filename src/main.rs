@@ -32,7 +32,7 @@ async fn main() {
     setup_logger();
 
     let matches = App::new("hy")
-        .version("0.2.0")
+        .version("0.2.1")
         .about("command line translation tool implemented in Rust")
         .arg(
             Arg::with_name("WORD")
