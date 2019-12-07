@@ -1,8 +1,8 @@
 use log::{debug, info};
 // TODO: once tokio upgraded to v0.2.0. this should be updated.
-use tokio_net::process::Command;
-use tokio::prelude::*;
 use std::time::Duration;
+use tokio::prelude::*;
+use tokio_net::process::Command;
 
 #[cfg(not(target_os = "macos"))]
 pub fn say(_: &str) {
@@ -20,7 +20,6 @@ pub async fn say(word: &str) {
         .await
         .expect("say command failed to run");
 
-
     let status_code = match status {
         Ok(s) => match s.code() {
             Some(c) => c,
@@ -29,7 +28,7 @@ pub async fn say(word: &str) {
         Err(e) => {
             info!("call say error: {:?}", e);
             -1
-        },
+        }
     };
 
     debug!(

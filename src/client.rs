@@ -1,5 +1,6 @@
-use serde_derive::Deserialize;
 use async_trait::async_trait;
+use serde_derive::Deserialize;
+use std::time::Duration;
 
 pub mod dictionary;
 pub mod iciba;
@@ -15,8 +16,9 @@ pub trait Parser {
     fn parse(&self, d: &Self::Item) -> Result<Item, ItemError>;
 }
 
-#[derive(Debug, Deserialize, Default)]
+#[derive(Debug, Default)]
 pub struct Item {
+    // TODO: use `&str` instead of String
     pub query: String,
     pub phonetic: Phonetic,
     pub acceptations: Vec<String>,
@@ -27,7 +29,7 @@ pub struct Item {
 #[derive(Debug, Deserialize, Default)]
 pub struct Phonetic {
     // TODO: more efficient type instead of String?
-    pub api: String,
+    pub api: &'static str,
     pub en: String,
     pub us: String,
 }
@@ -66,18 +68,12 @@ use dictionary::Dictionary;
 use iciba::Iciba;
 use youdao::YouDao;
 
+use futures::{pin_mut, select, FutureExt};
 use log::error;
-use futures::{
-    FutureExt,
-    pin_mut,
-    select,
-};
 
 fn render_result(res: Result<Item, ItemError>) {
-    match res{
-        Ok(item) => {
-            render::render_item(&item)
-        }
+    match res {
+        Ok(item) => render::render_item(&item),
         Err(err) => {
             error!("err: {:#?}", err);
         }
@@ -85,10 +81,10 @@ fn render_result(res: Result<Item, ItemError>) {
 }
 
 // TODO: refactor
-pub async fn translate(word: &str) {
-    let ic_client = Iciba::new();
-    let yd_client = YouDao::new();
-    let dc_client = Dictionary::new();
+pub async fn translate(word: &str, timeout: Duration) {
+    let ic_client = Iciba::new(timeout);
+    let yd_client = YouDao::new(timeout);
+    let dc_client = Dictionary::new(timeout);
 
     let s = say::say(word).fuse();
 
@@ -116,6 +112,6 @@ mod tests {
 
     #[tokio::test]
     async fn test_translate() {
-        translate("hello").await;
+        translate("hello", Duration::from_secs(2)).await;
     }
 }

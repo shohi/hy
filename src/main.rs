@@ -2,6 +2,7 @@ use clap::{App, Arg};
 
 use chrono::Local;
 use env_logger::Builder;
+use humantime;
 use log::LevelFilter;
 use std::io::Write;
 use tokio;
@@ -40,8 +41,17 @@ async fn main() {
                 .required(true)
                 .index(1),
         )
+        .arg(
+            Arg::with_name("timeout")
+                .long("timeout")
+                .help("timeout for http request")
+                .takes_value(true)
+                .default_value("2s"),
+        )
         .get_matches();
 
     let word = matches.value_of("WORD").unwrap();
-    client::translate(word).await;
+    let timeout_str = matches.value_of("timeout").unwrap();
+    let timeout = humantime::parse_duration(timeout_str).unwrap();
+    client::translate(word, timeout).await;
 }

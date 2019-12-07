@@ -1,18 +1,24 @@
-use super::{Item, ItemError, Query, TranslatePair, Phonetic};
+use super::{Item, ItemError, Phonetic, Query, TranslatePair};
 
 use async_trait::async_trait;
+use reqwest::Client;
 use serde_derive::Deserialize;
 use serde_json;
+use std::time::Duration;
 
 pub(super) struct YouDao {
+    client: Client,
     base_url: &'static str,
     key_from: &'static str,
     key: &'static str,
 }
 
 impl YouDao {
-    pub fn new() -> YouDao {
+    pub fn new(timeout: Duration) -> YouDao {
+        let client = Client::builder().timeout(timeout).build().unwrap();
+
         YouDao {
+            client,
             base_url: "http://fanyi.youdao.com/openapi.do",
             key_from: "node-fanyi",
             key: "110811608",
@@ -29,7 +35,7 @@ impl Query for YouDao {
         );
         // println!("url: {}", url);
 
-        let resp: String = reqwest::get(&url).await?.text().await?;
+        let resp: String = self.client.get(&url).send().await?.text().await?;
         let dict: Dict = serde_json::from_str(&resp).unwrap();
 
         let mut item = Item::default();
@@ -47,7 +53,7 @@ impl YouDao {
         let basic = &dict.basic;
 
         Phonetic {
-            api: "fanyi.youdao.com".into(),
+            api: "fanyi.youdao.com",
             en: format!("英[ {} ]", &basic.phen),
             us: format!("美[ {} ]", &basic.phus),
         }
@@ -80,13 +86,13 @@ struct Dict {
 
 #[derive(Default, Debug, Deserialize)]
 struct Basic {
-    #[serde(rename = "uk-phonetic", default)]
+    #[serde(default, rename = "uk-phonetic")]
     phen: String,
 
-    #[serde(rename = "us-phonetic", default)]
+    #[serde(default, rename = "us-phonetic")]
     phus: String,
 
-    #[serde(rename = "explains", default)]
+    #[serde(default, rename = "explains")]
     means: Vec<String>,
 }
 
@@ -106,7 +112,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_query() {
-        let yd = YouDao::new();
+        let yd = YouDao::new(Duration::from_secs(2));
         let result = yd.query("hello").await;
         println!("result -> {:#?}", &result);
     }

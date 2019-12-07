@@ -1,15 +1,21 @@
-use super::{Item, ItemError, Query, TranslatePair, Phonetic};
+use super::{Item, ItemError, Phonetic, Query, TranslatePair};
 
-use serde_derive::Deserialize;
 use async_trait::async_trait;
+use reqwest::Client;
+use serde_derive::Deserialize;
+use std::time::Duration;
 
 pub(super) struct Iciba {
+    client: Client,
     base_url: &'static str,
     // key: &'static str,
 }
 impl Iciba {
-    pub fn new() -> Iciba {
+    pub fn new(timeout: Duration) -> Iciba {
+        let client = Client::builder().timeout(timeout).build().unwrap();
+
         Iciba {
+            client,
             // base_url: "http://dict-co.iciba.com/api/dictionary.php",
             // key: "D191EBD014295E913574E1EAF8E06666",
             base_url: "http://www.iciba.com/index.php?a=getWordMean&c=search&list=1,8&word=",
@@ -24,7 +30,7 @@ impl Query for Iciba {
         let url = format!("{}{}", self.base_url, keyword);
         // println!("url: {}", url);
 
-        let resp: String = reqwest::get(&url).await?.text().await?;
+        let resp: String = self.client.get(&url).send().await?.text().await?;
         let val: Dict = serde_json::from_str(&resp).unwrap();
 
         let mut item = Item::default();
@@ -42,14 +48,14 @@ impl Iciba {
         // FIXME: check length
         if dict.base.symbols.len() == 0 {
             let mut p = Phonetic::default();
-            p.api = "iciba.com".into();
-            return p
+            p.api = "iciba.com";
+            return p;
         }
 
         let symbol = &dict.base.symbols[0];
 
         Phonetic {
-            api: "iciba.com".into(),
+            api: "iciba.com",
             en: format!("英[ {} ]", &symbol.phen),
             us: format!("美[ {} ]", &symbol.phus),
         }
@@ -59,7 +65,7 @@ impl Iciba {
         let mut result = Vec::new();
 
         if dict.base.symbols.len() == 0 {
-            return result
+            return result;
         }
 
         let parts = &dict.base.symbols[0].parts;
@@ -80,22 +86,22 @@ impl Iciba {
         let sents = &dict.sentences;
 
         /* TODO
-         * Why not work? dict is borrowed?
-         sents
-         .into_iter()
-         .map(|s| TranslatePair {
-         from: s.en,
-         to: s.cn,
-         })
-         .collect()
-         */
+        * Why not work? dict is borrowed?
+        sents
+        .into_iter()
+        .map(|s| TranslatePair {
+        from: s.en,
+        to: s.cn,
+        })
+        .collect()
+        */
         sents
             .iter()
             .map(|s| TranslatePair {
                 from: s.en.clone(),
                 to: s.cn.clone(),
             })
-        .collect()
+            .collect()
     }
 }
 
@@ -165,7 +171,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_yyy_query() {
-        let cb = Iciba::new();
+        let cb = Iciba::new(Duration::from_secs(2));
         let val = cb.query("hello").await;
         println!("result -> {:#?}", &val);
     }
