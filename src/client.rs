@@ -17,32 +17,33 @@ pub trait Parser {
 }
 
 #[derive(Debug, Default)]
-pub struct Item {
+pub struct Item<'a> {
     // TODO: use `&str` instead of String
-    pub query: String,
-    pub phonetic: Phonetic,
+    pub query: &'a str,
+    pub phonetic: Phonetic<'a>,
     pub acceptations: Vec<String>,
-    pub sentences: Vec<TranslatePair>,
+    pub sentences: Vec<TranslatePair<'a>>,
 }
 
 // TODO: implement format trait
 #[derive(Debug, Deserialize, Default)]
-pub struct Phonetic {
+pub struct Phonetic<'a> {
     // TODO: more efficient type instead of String?
     pub api: &'static str,
-    pub en: String,
-    pub us: String,
+    pub en: &'a str,
+    pub us: &'a str,
 }
 
 #[derive(Debug, Deserialize, Default)]
-pub struct TranslatePair {
-    pub from: String,
-    pub to: String,
+pub struct TranslatePair<'a> {
+    pub from: &'a str,
+    pub to: &'a str,
 }
 
 // TODO: use `failure` to handle error
 #[derive(Debug, Clone)]
 pub struct ItemError {
+    // TODO: use &str instead string
     pub message: String,
 }
 
