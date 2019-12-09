@@ -8,6 +8,7 @@ use tokio_net::process::Command;
 pub fn say(_: &str) {
     error!("say command is unimplemented on non-macOS");
 }
+
 // https://stackoverflow.com/questions/1366068/
 // whats-the-complete-range-for-chinese-characters-in-unicode
 const CJK_LOWER: char = '\u{4E00}';
@@ -23,18 +24,18 @@ fn is_chinese(word: &str) -> bool {
     let mut init_flag = true;
 
     for c in chars {
-        if init_flag {
-            init_flag = false
-        }
         if !is_chinese_char(c) {
             return false;
+        }
+
+        if init_flag {
+            init_flag = false
         }
     }
 
     if init_flag {
         return false;
     }
-    println!("true");
 
     true
 }
