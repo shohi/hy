@@ -26,7 +26,7 @@ impl Iciba {
 #[async_trait]
 impl Query for Iciba {
     // TODO: improve error handling
-    async fn query(&self, keyword: &str) -> Result<Item, ItemError> {
+    async fn query<'a>(&self, keyword: &'a str) -> Result<Item<'a>, ItemError> {
         let url = format!("{}{}", self.base_url, keyword);
         // println!("url: {}", url);
 
@@ -34,7 +34,7 @@ impl Query for Iciba {
         let val: Dict = serde_json::from_str(&resp).unwrap();
 
         let mut item = Item::default();
-        item.query = keyword.into();
+        item.query = keyword;
         item.phonetic = self.phonetic(&val);
         item.acceptations = self.acceptation(&val);
         item.sentences = self.sentence(&val);
@@ -45,7 +45,6 @@ impl Query for Iciba {
 
 impl Iciba {
     fn phonetic(&self, dict: &Dict) -> Phonetic {
-        // FIXME: check length
         if dict.base.symbols.len() == 0 {
             let mut p = Phonetic::default();
             p.api = "iciba.com";

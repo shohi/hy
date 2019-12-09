@@ -27,8 +27,7 @@ impl YouDao {
 }
 #[async_trait]
 impl Query for YouDao {
-    // TODO: add timeout for http request
-    async fn query(&self, keyword: &str) -> Result<Item, ItemError> {
+    async fn query<'a>(&self, keyword: &'a str) -> Result<Item<'a>, ItemError> {
         let url = format!(
             "{}?keyfrom={}&key={}&type=data&doctype=json&version=1.1&q={}",
             self.base_url, self.key_from, self.key, keyword
@@ -39,7 +38,7 @@ impl Query for YouDao {
         let dict: Dict = serde_json::from_str(&resp).unwrap();
 
         let mut item = Item::default();
-        item.query = keyword.into();
+        item.query = keyword;
         item.phonetic = self.phonetic(&dict);
         item.acceptations = self.acceptation(&dict);
         item.sentences = self.sentence(&dict);

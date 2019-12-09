@@ -30,7 +30,7 @@ impl Dictionary {
 
 #[async_trait]
 impl Query for Dictionary {
-    async fn query(&self, keyword: &str) -> Result<Item, ItemError> {
+    async fn query<'a>(&self, keyword: &'a str) -> Result<Item<'a>, ItemError> {
         let url = format!("{}/{}?key={}", self.base_url, keyword, self.key);
         // println!("{}", url);
 
@@ -47,7 +47,7 @@ impl Query for Dictionary {
 
                 let val = &dicts[0];
                 let mut item = Item::default();
-                item.query = keyword.into();
+                item.query = keyword;
                 item.phonetic = self.parser.phonetic(val);
                 item.acceptations = self.parser.acceptation(val);
                 item.sentences = self.parser.sentence(val);

@@ -8,7 +8,7 @@ pub mod youdao;
 
 #[async_trait]
 pub trait Query {
-    async fn query(&self, keyword: &str) -> Result<Item, ItemError>;
+    async fn query<'a>(&self, keyword: &'a str) -> Result<Item<'a>, ItemError>;
 }
 
 pub trait Parser {
@@ -17,9 +17,9 @@ pub trait Parser {
 }
 
 #[derive(Debug, Default)]
-pub struct Item {
+pub struct Item<'a> {
     // TODO: use `&str` instead of String
-    pub query: String,
+    pub query: &'a str,
     pub phonetic: Phonetic,
     pub acceptations: Vec<String>,
     pub sentences: Vec<TranslatePair>,
@@ -28,7 +28,6 @@ pub struct Item {
 // TODO: implement format trait
 #[derive(Debug, Deserialize, Default)]
 pub struct Phonetic {
-    // TODO: more efficient type instead of String?
     pub api: &'static str,
     pub en: String,
     pub us: String,
@@ -43,6 +42,7 @@ pub struct TranslatePair {
 // TODO: use `failure` to handle error
 #[derive(Debug, Clone)]
 pub struct ItemError {
+    // TODO: use &str instead string
     pub message: String,
 }
 
