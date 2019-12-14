@@ -1,6 +1,6 @@
 [package]
 name = "hy"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["shohi <oshohi@gmail.com>"]
 edition = "2018"
 
@@ -10,7 +10,11 @@ path = "src/main.rs"
 
 [dependencies]
 clap = "2.33.0"
-reqwest = "0.10.0-alpha.2"
+
+# TODO: update reqwest's version once new tag is cut based on tokio 0.2.0.
+# use commit after 0f32c4a (integrate tokio 0.2.0).
+reqwest = { git = "https://github.com/seanmonstar/reqwest", branch = "master" }
+
 futures = "0.3.1"
 
 serde = "^1.0.103"
@@ -24,8 +28,7 @@ chrono = "^0.4.10"
 termion = "^1.5.4"
 regex = "^1.3.1"
 
-tokio = "0.2.0-alpha.6"
-tokio-net = {version = "0.2.0-alpha.6", features = ["process"]}
+tokio = { version = "^0.2.0", features = ["macros", "process", "time"] }
 
 async-trait = "^0.1.21"
 

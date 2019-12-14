@@ -1,8 +1,7 @@
 use log::{debug, info};
-// TODO: once tokio upgraded to v0.2.0. this should be updated.
 use std::time::Duration;
-use tokio::prelude::*;
-use tokio_net::process::Command;
+use tokio::process::Command;
+use tokio::time;
 
 #[cfg(not(target_os = "macos"))]
 pub fn say(_: &str) {
@@ -49,9 +48,7 @@ pub async fn say(word: &str) {
         cmd.arg("-v").arg("Ting-Ting");
     }
 
-    let status = cmd
-        .status()
-        .timeout(Duration::from_secs(2))
+    let status = time::timeout(Duration::from_secs(2), cmd.status())
         .await
         .expect("say command failed to run");
 
