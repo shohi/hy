@@ -23,10 +23,11 @@ require `rust 1.39+` (async/await)
 ## TODO
 
 - [x] provide command flag to set timeout for http request
-- [ ] improve error handling
-- [ ] support search history and do some stats based on it
-- [x] output result in async way
 - [x] add version info
+- [x] output result in async way
+- [ ] support search history
+- [ ] improve error handling
+- [ ] provide stats on history
 
 ## Thanks
 
