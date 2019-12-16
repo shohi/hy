@@ -1,4 +1,4 @@
-use clap::{App, Arg};
+use clap::{App, Arg, SubCommand};
 
 use chrono::Local;
 use env_logger::Builder;
@@ -27,6 +27,14 @@ fn setup_logger() {
         .init();
 }
 
+fn history_cmd<'a, 'b>() -> App<'a, 'b> {
+    SubCommand::with_name("history").about("show history")
+}
+
+// TODO: implement
+#[allow(dead_code)]
+fn show_history() {}
+
 #[tokio::main]
 async fn main() {
     setup_logger();
@@ -48,7 +56,13 @@ async fn main() {
                 .takes_value(true)
                 .default_value("2s"),
         )
+        .subcommand(history_cmd())
         .get_matches();
+
+    if let Some(_matches) = matches.subcommand_matches("history") {
+        println!("TODO: show history");
+        return;
+    }
 
     let word = matches.value_of("WORD").unwrap();
     let timeout_str = matches.value_of("timeout").unwrap();
