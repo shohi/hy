@@ -8,6 +8,7 @@ use std::io::Write;
 use tokio;
 
 mod client;
+mod history;
 mod render;
 mod say;
 mod service;
