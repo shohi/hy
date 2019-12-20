@@ -9,7 +9,7 @@ name = "hy"
 path = "src/main.rs"
 
 [dependencies]
-clap = "2.33.0"
+clap = "^2.33.0"
 
 # TODO: update reqwest's version once new tag is cut based on tokio 0.2.0.
 # use commit after 0f32c4a (integrate tokio 0.2.0).

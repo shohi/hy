@@ -34,25 +34,40 @@ fn get_max_history_no(f: &File) -> u64 {
         None => return 0,
     };
 
+    let (no, _) = parse_record(line);
+    return no;
+}
+
+// record format
+// [no]:[timestamp]:[search word]
+//
+fn parse_record(line: io::Result<String>) -> (u64, String) {
     let line = match line {
         Ok(s) => s,
-        Err(_) => return 0,
+        Err(_) => return (0, "".to_string()),
     };
 
-    let tokens: Vec<&str> = line.split(":").collect();
-    if tokens.len() == 0 {
-        return 0;
+    let tokens: Vec<&str> = line.split(|c| c == ':' || c == ';').collect();
+    if tokens.len() < 1 {
+        return (0, "".to_string());
     }
 
     let max_no = tokens[0].parse::<u64>();
-
-    match max_no {
+    let max_no = match max_no {
         Ok(v) => v,
-        Err(_) => return 0,
+        Err(_) => 0,
+    };
+
+    let mut word = String::new();
+    if tokens.len() > 2 {
+        word = tokens[2].into()
     }
+
+    return (max_no, word);
 }
 
-fn record_search(word: &str) {
+// TODO: implement
+pub fn show_records() {
     let f = get_history_file();
     let mut f = match f {
         Ok(file) => file,
@@ -61,6 +76,19 @@ fn record_search(word: &str) {
             return;
         }
     };
+}
+
+pub fn record_search(word: &str) {
+    let f = get_history_file();
+    let mut f = match f {
+        Ok(file) => file,
+        Err(e) => {
+            println!("open history file error: {:?}", e);
+            return;
+        }
+    };
+
+    println!("record search");
 
     let dt = Local::now();
     let max_no = get_max_history_no(&f);

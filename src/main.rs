@@ -1,4 +1,4 @@
-use clap::{App, Arg, SubCommand};
+use clap::{App, AppSettings, Arg, SubCommand};
 
 use chrono::Local;
 use env_logger::Builder;
@@ -41,22 +41,25 @@ async fn main() {
     setup_logger();
 
     let matches = App::new("hy")
+        .setting(AppSettings::SubcommandsNegateReqs)
         .version("0.2.3")
         .about("command line translation tool implemented in Rust")
         .arg(
             Arg::with_name("WORD")
                 .help("set the word to translate")
                 .takes_value(true)
-                .required(true)
-                .index(1),
+                .global(false)
+                .required(true),
         )
         .arg(
             Arg::with_name("timeout")
                 .long("timeout")
                 .help("timeout for http request")
+                .global(false)
                 .takes_value(true)
                 .default_value("2s"),
         )
+        // TODO: fix subcommand
         .subcommand(history_cmd())
         .get_matches();
 
