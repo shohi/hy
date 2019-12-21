@@ -62,9 +62,9 @@ impl From<serde_json::Error> for ItemError {
     }
 }
 
+use crate::history;
 use crate::render;
 use crate::say;
-use crate::history;
 
 use dictionary::Dictionary;
 use iciba::Iciba;

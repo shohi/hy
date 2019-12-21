@@ -1,4 +1,3 @@
-use chrono::Local;
 use shellexpand;
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, Write};
@@ -8,7 +7,10 @@ use std::path::Path;
 const HIST_BASEDIR: &'static str = "~/.config/hy";
 const HIST_FILENAME: &'static str = "history";
 
-fn get_history_file() -> io::Result<File> {
+mod record;
+use record::Record;
+
+fn open_history_file() -> io::Result<File> {
     let p = shellexpand::tilde(HIST_BASEDIR).into_owned();
     let basedir_path = Path::new(p.as_str()).join("history");
 
@@ -34,52 +36,41 @@ fn get_max_history_no(f: &File) -> u64 {
         None => return 0,
     };
 
-    let (no, _) = parse_record(line);
-    return no;
-}
-
-// record format
-// [no]:[timestamp]:[search word]
-//
-fn parse_record(line: io::Result<String>) -> (u64, String) {
     let line = match line {
         Ok(s) => s,
-        Err(_) => return (0, "".to_string()),
+        Err(_) => return 0,
     };
 
-    let tokens: Vec<&str> = line.split(|c| c == ':' || c == ';').collect();
-    if tokens.len() < 1 {
-        return (0, "".to_string());
-    }
-
-    let max_no = tokens[0].parse::<u64>();
-    let max_no = match max_no {
-        Ok(v) => v,
-        Err(_) => 0,
-    };
-
-    let mut word = String::new();
-    if tokens.len() > 2 {
-        word = tokens[2].into()
-    }
-
-    return (max_no, word);
+    let record = Record::parse(&line);
+    return record.no;
 }
 
-// TODO: implement
+// TODO: update error handling
 pub fn show_records() {
-    let f = get_history_file();
-    let mut f = match f {
+    let f = open_history_file();
+    let f = match f {
         Ok(file) => file,
         Err(e) => {
             println!("open history file error: {:?}", e);
             return;
         }
     };
+
+    let f = BufReader::new(f);
+    for line in f.lines() {
+        let line = match line {
+            Ok(v) => v,
+            Err(_) => continue,
+        };
+
+        let record = Record::parse(&line);
+        println!("{}", record.to_console_string())
+    }
 }
 
+// TODO: refactor error handling
 pub fn record_search(word: &str) {
-    let f = get_history_file();
+    let f = open_history_file();
     let mut f = match f {
         Ok(file) => file,
         Err(e) => {
@@ -88,13 +79,10 @@ pub fn record_search(word: &str) {
         }
     };
 
-    println!("record search");
-
-    let dt = Local::now();
     let max_no = get_max_history_no(&f);
-    let record_no = max_no + 1;
+    let record = Record::new(max_no + 1, word.to_string());
+    let result = writeln!(&mut f, "{}", record);
 
-    let result = writeln!(&mut f, "{}:{};{}", record_no, dt.timestamp(), word);
     match result {
         Ok(()) => {}
         Err(e) => {
@@ -109,7 +97,7 @@ mod tests {
 
     #[test]
     fn test_create_file() {
-        let f = get_history_file();
+        let f = open_history_file();
         match f {
             Ok(_) => println!("create ok"),
             Err(e) => println!("err: {:?}", e),

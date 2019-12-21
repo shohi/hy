@@ -1,4 +1,4 @@
-use clap::{App, AppSettings, Arg, SubCommand};
+use clap::{crate_version, App, AppSettings, Arg, SubCommand};
 
 use chrono::Local;
 use env_logger::Builder;
@@ -29,20 +29,42 @@ fn setup_logger() {
 }
 
 fn history_cmd<'a, 'b>() -> App<'a, 'b> {
-    SubCommand::with_name("history").about("show history")
+    SubCommand::with_name("history")
+        .about("show history")
+        .arg(
+            // TODO: implement
+            Arg::with_name("time")
+                .long("time")
+                .help("sort by time")
+                .takes_value(true)
+                .global(false)
+                .default_value("true"),
+        )
+        .arg(
+            // TODO: implement
+            Arg::with_name("frequency")
+                .long("fequency")
+                .help("sort by frequency")
+                .takes_value(true)
+                .global(false)
+                .default_value("false"),
+        )
 }
 
-// TODO: implement
-#[allow(dead_code)]
-fn show_history() {}
+fn show_history() {
+    history::show_records()
+}
 
 #[tokio::main]
 async fn main() {
     setup_logger();
 
     let matches = App::new("hy")
-        .setting(AppSettings::SubcommandsNegateReqs)
-        .version("0.2.3")
+        .settings(&[
+            AppSettings::SubcommandsNegateReqs,
+            AppSettings::ArgsNegateSubcommands,
+        ])
+        .version(crate_version!())
         .about("command line translation tool implemented in Rust")
         .arg(
             Arg::with_name("WORD")
@@ -55,16 +77,18 @@ async fn main() {
             Arg::with_name("timeout")
                 .long("timeout")
                 .help("timeout for http request")
-                .global(false)
                 .takes_value(true)
+                .global(false)
                 .default_value("2s"),
         )
         // TODO: fix subcommand
+        // After adding `history` subcommand, `hy` can not recoganize works started by
+        // `he`, e.g. `hy hello` returns error.
         .subcommand(history_cmd())
         .get_matches();
 
     if let Some(_matches) = matches.subcommand_matches("history") {
-        println!("TODO: show history");
+        show_history();
         return;
     }
 
