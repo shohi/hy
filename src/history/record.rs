@@ -48,12 +48,12 @@ impl Record {
     }
 
     pub(super) fn to_console_string(&self) -> String {
-        format!("{:width$}  {}", self.no, self.word, width = 3)
+        format!("{:width$}  {}", self.no, &self.word, width = 3)
     }
 }
 
 impl fmt::Display for Record {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}:{}:{})", self.no, self.timestamp, &self.word)
+        write!(f, "{}:{}:{}", self.no, self.timestamp, &self.word)
     }
 }
