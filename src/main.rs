@@ -13,6 +13,8 @@ mod render;
 mod say;
 mod service;
 
+use history::History;
+
 fn setup_logger() {
     Builder::new()
         .format(|buf, record| {
@@ -52,7 +54,7 @@ fn history_cmd<'a, 'b>() -> App<'a, 'b> {
 }
 
 fn show_history() {
-    history::show_records()
+    History::show_records()
 }
 
 #[tokio::main]

@@ -62,7 +62,7 @@ impl From<serde_json::Error> for ItemError {
     }
 }
 
-use crate::history;
+use crate::history::History;
 use crate::render;
 use crate::say;
 
@@ -84,7 +84,7 @@ fn render_result(res: Result<Item, ItemError>) {
 
 // TODO: refactor
 pub async fn translate(word: &str, timeout: Duration) {
-    history::record_search(word);
+    History::record_search(word);
 
     let ic_client = Iciba::new(timeout);
     let yd_client = YouDao::new(timeout);
