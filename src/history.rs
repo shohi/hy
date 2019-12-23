@@ -12,7 +12,7 @@ use record::Record;
 pub struct History {}
 
 impl History {
-    fn open_history_file() -> io::Result<File> {
+    fn open() -> io::Result<File> {
         let p = shellexpand::tilde(HIST_BASEDIR).into_owned();
         let basedir_path = Path::new(p.as_str()).join("history");
 
@@ -30,7 +30,7 @@ impl History {
         Ok(file)
     }
 
-    fn get_max_history_no(f: &File) -> u64 {
+    fn max_record_no(f: &File) -> u64 {
         let file = BufReader::new(f);
         let line = file.lines().last();
         let line = match line {
@@ -48,8 +48,8 @@ impl History {
     }
 
     // TODO: update error handling
-    pub fn show_records() {
-        let f = Self::open_history_file();
+    pub fn dump() {
+        let f = Self::open();
         let f = match f {
             Ok(file) => file,
             Err(e) => {
@@ -71,8 +71,8 @@ impl History {
     }
 
     // TODO: refactor error handling
-    pub fn record_search(word: &str) {
-        let f = Self::open_history_file();
+    pub fn add(word: &str) {
+        let f = Self::open();
         let mut f = match f {
             Ok(file) => file,
             Err(e) => {
@@ -81,7 +81,7 @@ impl History {
             }
         };
 
-        let max_no = Self::get_max_history_no(&f);
+        let max_no = Self::max_record_no(&f);
         let record = Record::new(max_no + 1, word.to_string());
         let result = writeln!(&mut f, "{}", record);
 
@@ -100,7 +100,7 @@ mod tests {
 
     #[test]
     fn test_create_file() {
-        let f = History::open_history_file();
+        let f = History::open();
         match f {
             Ok(_) => println!("create ok"),
             Err(e) => println!("err: {:?}", e),
@@ -110,6 +110,6 @@ mod tests {
     #[test]
     fn test_record_search() {
         let word: &str = "hello";
-        History::record_search(word);
+        History::add(word);
     }
 }

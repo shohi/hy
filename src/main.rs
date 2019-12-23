@@ -54,7 +54,7 @@ fn history_cmd<'a, 'b>() -> App<'a, 'b> {
 }
 
 fn show_history() {
-    History::show_records()
+    History::dump()
 }
 
 #[tokio::main]

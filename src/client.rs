@@ -84,7 +84,7 @@ fn render_result(res: Result<Item, ItemError>) {
 
 // TODO: refactor
 pub async fn translate(word: &str, timeout: Duration) {
-    History::record_search(word);
+    History::add(word);
 
     let ic_client = Iciba::new(timeout);
     let yd_client = YouDao::new(timeout);

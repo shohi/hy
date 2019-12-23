@@ -57,3 +57,35 @@ impl fmt::Display for Record {
         write!(f, "{}:{}:{}", self.no, self.timestamp, &self.word)
     }
 }
+
+#[derive(Default, Debug)]
+pub(super) struct RecordStat {
+    pub word: String,
+    pub count: i64,
+    pub last_access: i64,
+    pub first_access: i64,
+}
+
+impl RecordStat {
+    pub fn new(r: &Record) -> Self {
+        RecordStat {
+            word: r.word.clone(),
+            count: 1,
+            last_access: r.timestamp,
+            first_access: r.timestamp,
+        }
+    }
+
+    pub fn update(&mut self, r: &Record) {
+        // TODO: check same word
+        self.count += 1;
+
+        if self.last_access < r.timestamp {
+            self.last_access = r.timestamp;
+        }
+
+        if self.first_access > r.timestamp {
+            self.first_access = r.timestamp;
+        }
+    }
+}
