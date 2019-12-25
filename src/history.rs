@@ -1,4 +1,5 @@
 use shellexpand;
+use std::collections::HashMap;
 use std::fs::{self, File, OpenOptions};
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::Path;
@@ -7,7 +8,7 @@ const HIST_BASEDIR: &'static str = "~/.config/hy";
 const HIST_FILENAME: &'static str = "history";
 
 mod record;
-use record::Record;
+use record::{Record, RecordStat};
 
 pub struct History {}
 
@@ -49,6 +50,8 @@ impl History {
 
     // TODO: update error handling
     pub fn dump() {
+        let mut map: HashMap<String, RecordStat> = HashMap::new();
+
         let f = Self::open();
         let f = match f {
             Ok(file) => file,
@@ -66,8 +69,20 @@ impl History {
             };
 
             let record = Record::parse(&line);
+
+            match map.get_mut(&record.word) {
+                Some(v) => {
+                    v.update(&record);
+                }
+                None => {
+                    map.insert(record.word.clone(), RecordStat::new(&record));
+                }
+            };
+
             println!("{}", record.to_console_string())
         }
+
+        // println!("map ==> {:?}", map);
     }
 
     // TODO: refactor error handling
